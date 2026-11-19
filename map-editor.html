@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Train Board Studio</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#182a3b;background:#eaf0f4;font-size:16px;color-scheme:light}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}button,input,select{border:1px solid #bbc9d3;border-radius:7px}button{background:white;color:#182a3b;padding:9px 12px;font-weight:600}button:hover{background:#edf4f8;border-color:#617e91}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #048b99;outline-offset:3px}input{min-width:0;padding:9px 10px;background:white;color:#182a3b}input[type=range]{width:100%;padding:0;accent-color:#007c88}button.primary{background:#087784;color:white;border-color:#087784}button.primary:hover{background:#065d67}button.danger{color:#a12c36}header{display:flex;align-items:center;gap:20px;padding:18px 24px;background:#122b3e;color:white}h1{font-size:20px;letter-spacing:-.5px;margin:0}header p{margin:3px 0 0;font-size:14px;color:#c6d7e2}.badge{margin-left:auto;font-size:14px;color:#c6d7e2}nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:white;border-bottom:1px solid #cbd6dd;padding:12px 24px}nav .spacer{flex:1}main{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:calc(100vh - 232px)}.workspace{padding:20px;min-width:0;overflow:auto;position:relative}.sheet{background:white;box-shadow:0 5px 22px #17334b22;max-width:1500px;min-width:640px;margin:auto;position:relative;aspect-ratio:420/297}.sheet svg{width:100%;height:100%;display:block;touch-action:none;user-select:none}.sheet svg [data-city]{cursor:grab}.sheet svg [data-city-label]{cursor:move}.sheet svg [data-route]{cursor:grab}.sheet svg .bend-handle{cursor:crosshair}.empty-note{pointer-events:none;position:absolute;inset:34% 12% auto;text-align:center;color:#526b7c}.empty-note h2{font-size:25px;letter-spacing:-.7px;font-weight:600;color:#182a3b}.empty-note p{font-size:16px;line-height:1.7;margin:8px}.key{display:inline-block;padding:2px 7px;border:1px solid #bdcbd4;border-radius:5px;font-size:13px;background:#f6f9fb}.workspace-help{font-size:14px;color:#4b6374;line-height:1.6;max-width:1500px;margin:14px auto 0}aside{border-left:1px solid #cbd6dd;background:#f8fafc;padding:22px 18px;overflow:auto}aside h2{font-size:16px;margin:0 0 12px}aside h3{font-size:14px;margin:20px 0 9px}aside p{font-size:14px;line-height:1.6;color:#4b6374;margin:8px 0}aside section+section{border-top:1px solid #d7e1e7;margin-top:22px;padding-top:20px}.field{display:grid;gap:7px;font-size:14px;margin-bottom:16px}.field input{width:100%;font-size:15px}.selection-title{font-size:16px;font-weight:650;overflow-wrap:anywhere;line-height:1.5;margin-bottom:6px}.lengths{display:flex;gap:6px;flex-wrap:wrap}.lengths button{width:36px;padding:8px 0}.lengths button.active{background:#16384e;color:white;border-color:#16384e}.custom{display:flex;align-items:center;gap:10px;font-size:14px;margin-top:10px}.custom input{width:88px}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{padding:0;border:2px solid transparent;background:white;min-width:0;display:grid;justify-items:center;gap:5px;font-size:12px;font-weight:500;color:#384f60}.swatch span{display:block;width:100%;height:27px;border-radius:4px;background:var(--color)}.swatch:hover{background:white;border-color:#91a9ba}.swatch.active{border-color:#16384e}.swatch.active span{outline:2px solid white;outline-offset:-4px}.wide{width:100%;margin-top:10px}.stats{display:flex;gap:12px;margin-bottom:12px}.stats strong{display:block;font-size:26px;font-weight:650;color:#182a3b}.stats div{flex:1;font-size:13px;color:#526b7c}.counts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:14px;align-items:center}.counts span:nth-child(3n){text-align:right}.counts .muted{font-size:12px;color:#526b7c}.counts .match{color:#087160;font-weight:650}.error{color:#a12c36!important}.hint{color:#657c8c;font-size:13px!important}.bottom{position:sticky;bottom:0;z-index:2;background:white;border-top:1px solid #cbd6dd;padding:14px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}.bottom form{display:flex;gap:8px;align-items:center;flex:1;max-width:620px}.bottom label{font-size:14px;font-weight:650;white-space:nowrap}.bottom input{flex:1}.bottom button{white-space:nowrap}#status{font-size:14px;color:#4b6374;flex:1;min-width:190px}.title-field{display:flex;align-items:center;gap:8px;font-size:14px}.title-field input{width:240px;font-size:14px}.check{display:flex;gap:8px;align-items:center;font-size:14px;margin:10px 0}.print-only{display:none}[hidden]{display:none!important}
+@media(max-width:1000px){main{grid-template-columns:minmax(0,1fr) 260px}aside{padding:18px 12px}.title-field{width:100%}.title-field input{flex:1}.workspace{padding:12px}.badge{display:none}}
+@media(max-width:720px){main{display:block}aside{border-left:0;border-top:1px solid #cbd6dd;display:grid;grid-template-columns:1fr 1fr;gap:20px}aside section+section{border:0;margin:0;padding:0}.workspace{overflow:auto}.sheet{min-width:680px}header,nav{padding:14px}nav button{font-size:14px}.bottom{position:static;padding:14px}.bottom form{flex-basis:100%}.bottom label{display:none}.empty-note h2{font-size:22px}}
+@page{size:A3 landscape;margin:0}
+@media print{body>*{display:none!important}.print-only{display:block!important;width:420mm;height:297mm}.print-only>svg{width:420mm;height:297mm;display:block}}
+</style>
+<style id="page-format">@page{size:A3 landscape;margin:0}</style>
+<style>
+.bottom{position:relative;bottom:auto}.ticket-builder{border:1px solid #cbd8df;border-radius:8px;padding:12px;margin:14px 0;background:white}.ticket-builder h3{margin:0 0 8px;font-size:14px}.ticket-builder label{display:flex;align-items:center;gap:10px;font-size:14px}.ticket-builder input{width:100px}.ticket-section{padding:24px;background:#f2f6f9;border-top:1px solid #cbd6dd}.ticket-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}.ticket-heading h2{font-size:20px;margin:0 auto 0 0}.ticket-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}.ticket-item{border:1px solid #c4d0d9;border-radius:9px;padding:10px;background:white;min-width:0}.ticket-item svg{display:block;width:100%;height:auto}.ticket-actions{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid #e0e6eb}.ticket-actions label{display:flex;align-items:center;gap:8px;font-size:14px}.ticket-actions input{width:90px}.ticket-actions button{margin-left:auto}.ticket-section>p{font-size:14px;color:#4b6374;line-height:1.6}
+@media print{body[data-print="tickets"] .print-only{width:215.9mm;height:auto}body[data-print="tickets"] .print-only>.ticket-sheet>svg{width:215.9mm;height:279.4mm}.ticket-sheet{width:215.9mm;height:279.4mm;break-inside:avoid;break-after:page;page-break-after:always}.ticket-sheet:last-child{break-after:auto;page-break-after:auto}}
+@media print{body[data-print="tracking"] .print-only,body[data-print="tracking"] .print-only>svg{width:215.9mm;height:279.4mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+body{height:auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow:visible}
+main{flex:1;min-height:0;overflow:visible;align-items:stretch}.main-content{min-width:0;min-height:0;overflow:visible}aside{min-height:0;overflow:visible;align-self:stretch;padding:14px 12px}aside .add-city-section{padding-top:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#add-city-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}#add-city-form input{width:100%}#add-city-form button{width:auto;margin:0;white-space:nowrap}.bottom{padding:8px 16px}#status{min-width:0;overflow-wrap:anywhere}
+header{padding:12px 18px}nav{padding:8px 16px;gap:6px}nav button{padding:7px 10px;font-size:14px}.title-field input{padding:7px 9px}
+aside h2{margin-bottom:8px}aside h3{margin:10px 0 6px}aside p{margin:6px 0;line-height:1.4}aside section+section{margin-top:12px;padding-top:12px}aside button{padding:6px 8px;font-size:14px;line-height:1.3}aside input{padding:6px 8px}aside .field{gap:4px;margin-bottom:10px}aside .field input{font-size:14px}aside .wide{margin-top:6px}aside .selection-title{font-size:15px;line-height:1.35;margin-bottom:4px}aside .lengths{gap:4px}aside .lengths button{width:32px;padding:6px 0}aside .custom{gap:6px;margin-top:7px}aside .custom input{width:76px}aside .palette{gap:5px}aside .swatch{padding:0;font-size:12px;gap:3px}aside .swatch span{height:22px}aside .check{margin:7px 0}aside .stats{margin-bottom:8px}aside .stats strong{font-size:23px}aside .counts{gap:4px}
+aside .ticket-builder{padding:8px;margin:10px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}aside .ticket-builder h3{grid-column:1/-1;margin:0}aside .ticket-builder label{gap:5px}aside .ticket-builder input{width:64px}aside .ticket-builder button{width:auto;margin:0;align-self:center}aside .ticket-builder p{grid-column:1/-1;margin:0}
+@media(max-width:720px){body{display:block}aside{display:block}aside section+section{border-top:1px solid #d7e1e7;margin-top:12px;padding-top:12px}}
+nav{align-items:flex-end;gap:14px;padding:10px 16px;background:#f8fafc}
+.toolbar-group{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
+.toolbar-label,nav .title-field>label{font-size:12px;font-weight:650;letter-spacing:.45px;color:#526b7c;line-height:1.2}
+.toolbar-buttons{display:flex;gap:5px}
+nav button{height:34px;min-width:72px;padding:0 11px;border:1px solid #bdcbd6;border-radius:6px;background:white;color:#213d51;font-size:14px;font-weight:600;line-height:1;white-space:nowrap;box-shadow:0 1px 1px #17334b08}
+nav button:hover:not(:disabled){background:#edf4f8;border-color:#728c9e}nav button:active:not(:disabled){background:#e0edf3;box-shadow:none}nav button:disabled{background:#f0f3f6;color:#8396a3;border-color:#d5dfe6;opacity:.65}
+nav .title-field{display:flex;flex-direction:column;align-items:stretch;gap:5px;flex:1 1 190px;width:auto;min-width:170px;max-width:320px}
+nav .title-field input{flex:none;width:100%;height:34px;padding:0 10px;border-radius:6px;border-color:#bdcbd6;font-size:14px}
+@media(max-width:720px){nav{gap:10px 12px;padding:10px 14px}nav .title-field{flex:1 1 180px;max-width:none}nav button{height:34px;padding:0 10px;font-size:14px}}
+@media print{body{display:block;height:auto;overflow:visible}}
+@media screen{
+  :root{color-scheme:dark;background:#0e161f;color:#e3ecf3}
+  body,.main-content,.workspace{background:#0e161f;color:#e3ecf3}
+  header{background:#111e2a;border-bottom:1px solid #2c3e4d}header p,.badge{color:#aabfce}
+  nav{background:#182530;border-bottom-color:#344958}
+  aside{background:#15222d;border-color:#344958}aside section+section{border-color:#304451}
+  button,nav button{background:#243745;border-color:#425b6c;color:#e3edf4;box-shadow:none}
+  button:hover:not(:disabled),nav button:hover:not(:disabled){background:#2d4759;border-color:#638398}
+  nav button:active:not(:disabled){background:#38586c}
+  nav button:disabled{background:#1c2c38;border-color:#344a59;color:#a4b4c0;opacity:.55}
+  input,select,nav .title-field input{background:#0f1b25;border-color:#405968;color:#e3edf4}
+  input::placeholder{color:#98acbb;opacity:1}
+  input[type=range],input[type=checkbox]{accent-color:#63cbd8}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#72d6e0}
+  button.primary{background:#116e7c;border-color:#3696a6;color:white}button.primary:hover{background:#178798;border-color:#64c7d4}
+  button.danger{color:#ffacb5}.error{color:#ffacb5!important}
+  aside p,.hint,.stats div,.counts .muted,.toolbar-label,nav .title-field>label{color:#a9bdcb}
+  .stats strong{color:#e3edf4}.counts .match{color:#7edbc4}
+  .lengths button.active{background:#285a6c;border-color:#70d5e0;color:white}
+  .swatch,.swatch:hover{background:#15222d;color:#d8e5ee}.swatch:hover{border-color:#7c9aaf}.swatch.active{border-color:#72d6e0}
+  aside .ticket-builder{background:#1a2b38;border-color:#3a5263}
+  .ticket-section{background:#111d27;border-color:#344958}.ticket-section>p{color:#a9bdcb}
+  .ticket-item{background:#1b2c39;border-color:#3d5668}.ticket-actions{border-color:#3d5668}
+  .sheet{box-shadow:0 6px 24px #0007}
+}
+</style>
+<style>
+#scoreboard-dialog{width:min(96vw,820px);max-height:94vh;padding:0;border:1px solid #779384;border-radius:12px;background:#15222d;color:#e3edf4;overscroll-behavior:contain}
+#scoreboard-dialog::backdrop{background:#071016b8}
+.scoreboard-header{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 14px;background:#15222d}
+.scoreboard-header h2{margin:0;font-size:17px}
+.scoreboard-actions{display:flex;gap:6px;flex-wrap:wrap}
+#scoreboard-preview{display:block;width:100%;margin:auto}
+</style>
+</head>
+<body>
+<header><div><h1>Train Board Studio</h1><p>Place your towns. Connect your map.</p></div><span id="board-format" class="badge">A3 landscape · editable SVG · works offline</span></header>
+<nav aria-label="Board actions">
+  <div class="toolbar-group" role="group" aria-label="Edit history"><div class="toolbar-buttons"><button id="undo" disabled title="Undo (Ctrl+Z)">Undo</button><button id="redo" disabled title="Redo (Ctrl+Shift+Z)">Redo</button></div></div>
+  <span class="title-field"><label class="sr-only" for="board-title">Board title</label><input id="board-title" value="MY TRAIN MAP" maxlength="65"></span>
+  <div class="toolbar-group" role="group" aria-label="Project files"><div class="toolbar-buttons"><button id="open" title="Open a saved JSON project">Open</button><button id="save" title="Save project as JSON">Save</button></div></div><input id="file" type="file" accept=".json,application/json" hidden>
+  <div class="toolbar-group" role="group" aria-label="Map exports"><div class="toolbar-buttons"><button id="export" title="Download the editable A3 map SVG">Export SVG</button><button id="print" title="Print the A3 map or save it as PDF">Print map</button></div></div>
+  <div class="toolbar-group" role="group" aria-label="Ticket exports"><div class="toolbar-buttons"><button id="export-tickets" disabled title="Export printable Letter ticket sheets">Export tickets</button><button id="print-tickets" disabled title="Print Letter ticket sheets or save them as PDF">Print tickets</button></div></div>
+  <div class="toolbar-group" role="group" aria-label="Tracking sheet"><div class="toolbar-buttons"><button id="view-scoreboard" aria-haspopup="dialog" aria-controls="scoreboard-dialog">View scoreboard</button><button id="export-tracking" title="Export a standalone Letter train and score tracking sheet">Export tracking</button><button id="print-tracking" title="Print a Letter train and score tracking sheet">Print tracking</button></div></div>
+</nav>
+<main>
+<div class="main-content">
+<div class="workspace">
+  <div id="map-sheet" class="sheet"><svg id="canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 297" role="group" aria-label="Editable train map. Drag cities to move them. Click two cities, then a color, to add a route."></svg>
+  <div id="empty-note" class="empty-note"><h2>Your next journey starts here.</h2><p>Add a city using New City in the sidebar, then drag its dot into place.<br>Click two cities and choose a color to connect them.</p><p><span class="key">Esc</span> clears selection · <span class="key">Ctrl Z</span> undoes an edit</p></div></div>
+</div>
+<section class="ticket-section" aria-label="Destination tickets"><div class="ticket-heading"><h2>Destination tickets <span id="ticket-count">(0)</span></h2></div><p>Finished laminated size: 3.5 × 2.5 inches (88.9 × 63.5 mm, landscape). Paper inserts: 82.9 × 57.5 mm, leaving 3 mm of clear film on every side. Eight inserts per US Letter page; guides mark the paper cuts. Cut out the paper first, laminate with at least 6 mm between inserts, then trim the film to the finished size. Print at 100% / actual size; turn off headers and footers. Points are editable.</p><p id="tickets-empty">No tickets yet. Click two city dots on the map, then use Create Ticket.</p><div id="ticket-list" class="ticket-grid"></div></section>
+</div>
+<aside aria-label="Map controls">
+<section class="add-city-section">
+  <h2>New City</h2>
+  <form id="add-city-form"><label class="sr-only" for="city-name">City name</label><input id="city-name" placeholder="Enter a city name…" maxlength="60" autocomplete="off" required><button class="primary" type="submit">Add City</button></form>
+  <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+</section>
+<section id="selection-controls" hidden>
+  <div id="ticket-builder" class="ticket-builder" hidden><h3>Destination ticket</h3><label for="ticket-points">Points <input id="ticket-points" type="number" min="1" max="999999" step="1" value="1" disabled></label><button id="create-ticket" class="primary wide" disabled>Create Ticket</button><p id="ticket-hint" class="hint">Select two city dots to make a ticket.</p></div>
+  <div id="city-fields" hidden><label class="field">City name<input id="rename" maxlength="60"></label><button id="auto-label" class="wide">Auto-place label</button><button id="delete-city" class="danger wide">Delete city, routes &amp; tickets</button></div>
+  <div id="route-controls" hidden>
+    <h3>Tracks between cities</h3><div id="track-counts" class="lengths" role="group" aria-label="Number of parallel tracks"></div>
+    <p class="hint">Separate colors; shared train length.</p>
+    <h3>Train length</h3><div id="lengths" class="lengths" role="group" aria-label="Route train length"></div>
+    <label class="custom">Custom length <input id="custom-length" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="e.g. 8"></label>
+    <p id="length-error" class="error" hidden>Enter a whole number from 1 to 999.</p>
+    <p class="hint">Lengths above 6 use your own scoring rule.</p>
+    <h3>Route color</h3><div id="palette" class="palette" role="group" aria-label="Choose route color"></div>
+    <div id="special-route-controls" hidden>
+      <h3>Special requirements</h3>
+      <label class="check"><input id="water-route" type="checkbox"> Water route</label>
+      <label id="locomotive-field" class="field" hidden>Required locomotives<input id="locomotives" type="number" min="1" max="999" step="1" value="1"></label>
+      <label class="check"><input id="tunnel-route" type="checkbox"> Tunnel</label>
+      <label id="tunnel-draw-field" class="field" hidden>Cards to draw<input id="tunnel-draw" type="number" min="1" max="99" step="1" value="3"></label>
+      <button id="reset-route-badges" class="wide">Auto-place badges</button>
+    </div>
+    <div id="bend-controls" hidden><label class="field" style="margin-top:18px">Curve <input id="bend" type="range" min="-90" max="90" step="1" value="0"></label><button id="straighten" class="wide">Straighten route</button><button id="delete-route" class="danger wide">Delete route</button></div>
+  </div>
+  <button id="clear-selection" class="wide" hidden>Clear selection</button>
+</section>
+<section>
+  <h2>Board setup</h2>
+  <label class="field">Paper size<select id="paper-size" style="padding:6px 8px;font-size:14px"><option value="letter">Letter</option><option value="tabloid">11 × 17</option><option value="a3" selected>A3</option></select></label>
+  <label class="field">Orientation<select id="orientation" style="padding:6px 8px;font-size:14px"><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select></label>
+  <label class="field" for="map-scale"><span>Map scale <output id="map-scale-value" for="map-scale">100%</output></span><input id="map-scale" type="range" min="0" max="100" step=".1" value="50"></label>
+  <label class="field" for="element-scale"><span>Element size <output id="element-scale-value" for="element-scale">100%</output></span><input id="element-scale" type="range" min="0" max="100" step=".1" value="50"></label>
+  <label class="field">Map background<input id="map-background" type="color" value="#eef3e8" style="height:30px;width:100%;padding:3px"></label>
+  <div style="display:flex;gap:6px;margin-bottom:14px"><button type="button" data-background="#ffffff">White</button><button type="button" data-background="#eef3e8">Sage</button><button type="button" data-background="#e8f0f7">Blue</button></div>
+  <label class="field">Background layer<select id="terrain-type" style="padding:6px 8px;font-size:14px"><option value="none">Solid color only</option><option id="uploaded-terrain-option" value="uploaded" disabled>Uploaded SVG</option></select></label>
+  <div style="display:flex;gap:6px;margin-bottom:10px"><button id="upload-terrain" type="button">Upload SVG</button><button id="remove-terrain" type="button" hidden>Remove SVG</button></div><input id="terrain-file" type="file" accept=".svg,image/svg+xml" hidden>
+  <div id="terrain-controls" hidden>
+    <label class="field" for="terrain-opacity"><span>Opacity <output id="terrain-opacity-value">35%</output></span><input id="terrain-opacity" type="range" min="0" max="100" step="1" value="35"></label>
+    <label class="field" for="terrain-zoom"><span>Background zoom <output id="terrain-zoom-value">100%</output></span><input id="terrain-zoom" type="range" min="0" max="100" step=".1" value="50"></label>
+    <div style="display:flex;gap:6px;margin-bottom:10px"><button id="move-terrain" type="button" aria-pressed="false">Move background</button><button id="reset-terrain" type="button">Reset placement</button></div>
+  </div>
+  <label class="check"><input id="show-title" type="checkbox" checked> Show title</label>
+  <label class="check"><input id="trackers" type="checkbox" checked> Five 45-train trackers</label>
+  <label class="check"><input id="scoring" type="checkbox" checked> Route scoring reference</label>
+  <button id="map-only" type="button" class="wide">Use full map canvas</button>
+</section>
+<section>
+  <h2>Network totals</h2><div class="stats"><div><strong id="city-count">0</strong>towns / 36 target</div><div><strong id="route-count">0</strong>routes / 100 target</div></div>
+  <div id="counts" class="counts" aria-label="Route-length counts"></div>
+  <button id="new" class="danger wide">New empty board</button>
+</section>
+</aside>
+</main>
+<dialog id="scoreboard-dialog" aria-labelledby="scoreboard-heading">
+  <form class="scoreboard-header" method="dialog">
+    <h2 id="scoreboard-heading">Scoreboard</h2>
+    <div class="scoreboard-actions">
+      <button id="preview-print-tracking" type="button">Print tracking</button>
+      <button id="preview-export-tracking" type="button">Export tracking</button>
+      <button autofocus>Close</button>
+    </div>
+  </form>
+  <img id="scoreboard-preview" alt="Letter scoreboard with five train counters and five score lanes from 0 to 300" width="2159" height="2794" style="height:auto">
+</dialog>
+<div id="print-board" class="print-only"></div>
+
+<script id="board-core">
+// Standalone, dependency-free SVG generator; coordinates are millimetres.
+const BoardCore = (() => {
+  // Background SVG geometry is supplied by the saved project.
+  const paperSizes={letter:{label:'Letter',width:279.4,height:215.9},tabloid:{label:'11 × 17',width:431.8,height:279.4},a3:{label:'A3',width:420,height:297}};
+  const size=board=>{const paper=paperSizes[board.paper||'a3'];return board.orientation==='portrait'?{...paper,width:paper.height,height:paper.width}:paper;};
+  const palette={red:'#d7262e',blue:'#0068c9',green:'#008548',yellow:'#b6a000',orange:'#e66b00',purple:'#8f2db8',black:'#15191e',gray:'#929ca6'};
+  const targets={1:9,2:36,3:20,4:16,5:10,6:9};
+  const emptyTerrain=()=>({type:'none',opacity:35,zoom:100,x:0,y:0});
+  const terrainState=board=>({...emptyTerrain(),...board.terrain});
+  const empty=()=>({version:1,title:'MY TRAIN MAP',showTitle:true,paper:'a3',orientation:'landscape',mapScale:100,elementScale:100,background:'#eef3e8',terrain:emptyTerrain(),trackers:true,scoring:true,cities:[],routes:[],tickets:[]});
+  const terrainZoomFromSlider=v=>v<=50?50+v:100+(v-50)*4;
+  const terrainSliderFromZoom=z=>z<=100?z-50:50+(z-100)/4;
+  const svgTags=new Set(['svg','g','defs','path','rect','circle','ellipse','line','polyline','polygon','clipPath','linearGradient','radialGradient','stop','text','tspan','title','desc']);
+  const svgAttrs=new Set('id x y x1 y1 x2 y2 cx cy r rx ry width height d points viewBox preserveAspectRatio transform fill fill-opacity fill-rule clip-rule stroke stroke-width stroke-opacity stroke-linecap stroke-linejoin stroke-miterlimit stroke-dasharray stroke-dashoffset opacity clip-path clipPathUnits gradientUnits gradientTransform spreadMethod offset stop-color stop-opacity font-size font-family font-weight font-style text-anchor dominant-baseline letter-spacing word-spacing textLength lengthAdjust pathLength'.split(' '));
+  function cleanSvgAsset(input){
+    if(!input||!Array.isArray(input.nodes)||![input.x,input.y,input.width,input.height].every(Number.isFinite)||input.width<=0||input.height<=0||Math.max(Math.abs(input.x),Math.abs(input.y),input.width,input.height)>1e6)throw Error('Invalid background SVG dimensions.');
+    let count=0,characters=0,drawings=0;
+    function clean(node,depth=0){
+      if(depth>60||++count>20000)throw Error('Background SVG is too complex.');
+      if(!node||!svgTags.has(node.tag))return null;
+      const attrs={};for(const [key,raw]of Object.entries(node.attrs||{})){
+        if(!svgAttrs.has(key)||typeof raw!=='string')continue;
+        const value=raw.trim();characters+=value.length;if(characters>6000000||value.length>1500000)throw Error('Background SVG is too large.');
+        if(/[<>]|javascript:|data:|https?:|@import|expression\(/i.test(value))continue;
+        if(['fill','stroke','stop-color'].includes(key)&&!/^(?:[a-z]+|#[\da-f]{3,8}|rgba?\([\d.,%\s]+\)|url\(#[a-z_][\w:.-]*\))$/i.test(value))continue;
+        if(key==='clip-path'&&!/^(?:none|url\(#[a-z_][\w:.-]*\))$/i.test(value))continue;
+        if(key==='id'&&!/^[a-z_][\w:.-]*$/i.test(value))continue;
+        if(key==='d'&&!/^[MmZzLlHhVvCcSsQqTtAa0-9eE+.,\s-]*$/.test(value))continue;
+        if(['points','viewBox'].includes(key)&&!/^[0-9eE+.,\s-]+$/.test(value))continue;
+        if(['transform','gradientTransform'].includes(key)&&!/^(?:\s*(?:matrix|translate|scale|rotate|skewX|skewY)\s*\([0-9eE+.,\s-]+\)\s*)+$/.test(value))continue;
+        if(/url\(/i.test(value)&&!/^url\(#[a-z_][\w:.-]*\)$/i.test(value))continue;
+        attrs[key]=value;
+      }
+      const children=Array.isArray(node.children)?node.children.map(child=>clean(child,depth+1)).filter(Boolean):[];
+      const text=['text','tspan','title','desc'].includes(node.tag)?String(node.text||'').slice(0,10000):'';
+      if(['path','rect','circle','ellipse','line','polyline','polygon','text'].includes(node.tag))drawings++;
+      return {tag:node.tag,attrs,...(text?{text}:{}),...(children.length?{children}:{})};
+    }
+    const nodes=input.nodes.map(n=>clean(n)).filter(Boolean);if(!drawings)throw Error('No supported vector artwork was found in that SVG.');
+    return {name:String(input.name||'Background.svg').slice(0,140),x:input.x,y:input.y,width:input.width,height:input.height,nodes};
+  }
+  const svgAssetCache=new WeakMap();
+  function svgAssetMarkup(asset){
+    if(svgAssetCache.has(asset))return svgAssetCache.get(asset);
+    const e=escape;
+    function render(node){
+      const attrs=Object.entries(node.attrs).map(([key,value])=>`${key}="${e(key==='id'?'uploaded-'+value:value.replace(/url\(#([^)]+)\)/g,'url(#uploaded-$1)'))}"`).join(' ');
+      return `<${node.tag}${attrs?' '+attrs:''}>${e(node.text||'')}${(node.children||[]).map(render).join('')}</${node.tag}>`;
+    }
+    const markup=asset.nodes.map(render).join('');svgAssetCache.set(asset,markup);return markup;
+  }
+  function terrainPlacement(board){
+    const p=size(board),state=terrainState(board),asset=state.asset;
+    const scale=Math.max(p.width/asset.width,p.height/asset.height)*state.zoom/100;
+    return {scale,x:(p.width-asset.width*scale)/2+state.x,y:(p.height-asset.height*scale)/2+state.y,sourceX:asset.x,sourceY:asset.y};
+  }
+  function terrainMarkup(board){
+    const state=terrainState(board);if(state.type==='none'||!state.asset)return '';
+    const p=size(board),t=terrainPlacement(board);
+    return `<defs><clipPath id="terrain-paper-clip"><rect width="${p.width}" height="${p.height}"/></clipPath></defs><g id="terrain-background" clip-path="url(#terrain-paper-clip)" opacity="${state.opacity/100}" pointer-events="none"><g transform="translate(${t.x} ${t.y}) scale(${t.scale}) translate(${-t.sourceX} ${-t.sourceY})">${svgAssetMarkup(state.asset)}</g></g>`;
+  }
+  const details=board=>(board.elementScale??100)/100;
+  const trackerTop=board=>board.showTitle!==false?19:6;
+  function mapArea(board,paper=size(board)){
+    return {left:.5,right:paper.width-.5,top:board.trackers?trackerTop(board)+4*6.4+4.8+.5:board.showTitle!==false?16:6,bottom:board.scoring?paper.height-11:paper.height-.5};
+  }
+  function cityBounds(board,paper=size(board)){
+    const a=mapArea(board,paper),radius=2.725*details(board);
+    return {left:a.left+radius,right:a.right-radius,top:a.top+radius,bottom:a.bottom-radius};
+  }
+  const scaleFromSlider=(position,min=25)=>position<=50?min+(100-min)*position/50:100+(position-50)*2;
+  const sliderFromScale=(percent,min=25)=>percent<=100?(percent-min)*50/(100-min):50+(percent-100)/2;
+  const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+  const copy=v=>JSON.parse(JSON.stringify(v));
+  const peers=(board,r)=>board.routes.filter(p=>(p.from===r.from&&p.to===r.to)||(p.from===r.to&&p.to===r.from));
+  function setTrackCount(board,r,count,newId){
+    if(!board.routes.includes(r)||!Number.isInteger(count)||count<1||count>3)throw Error('Choose one, two, or three tracks.');
+    const group=peers(board,r);
+    if(board.routes.length+Math.max(0,count-group.length)>1000)throw Error('Maximum of 1,000 routes reached.');
+    if(group.length<count){for(let i=group.length;i<count;i++)board.routes.push({...copy(r),id:newId()});}
+    else if(group.length>count){const keep=new Set([r,...group.filter(p=>p!==r).slice(0,count-1)]);board.routes=board.routes.filter(p=>!group.includes(p)||keep.has(p));}
+  }
+  function bendTracks(board,r,bend){
+    bend=Math.max(-90,Math.min(90,bend));
+    for(const p of peers(board,r))p.bend=bend*(p.from===r.from?1:-1);
+  }
+  function setLength(board,r,length){
+    if(!Number.isInteger(length)||length<1||length>999)throw Error('Enter a whole number from 1 to 999.');
+    for(const p of peers(board,r)){p.length=length;if(p.locomotives!==undefined)p.locomotives=Math.min(p.locomotives,length);}
+  }
+  function resizeBoard(board,paper,orientation=board.orientation||'landscape'){
+    if(!Object.hasOwn(paperSizes,paper))throw Error('Choose Letter, 11 × 17, or A3.');
+    if(!['landscape','portrait'].includes(orientation))throw Error('Choose landscape or portrait.');
+    const before=size(board),after=size({paper,orientation}),oldBounds=cityBounds(board,before),newBounds=cityBounds(board,after),baseBounds=cityBounds(board,paperSizes.a3);
+    const nominalScale=p=>{const b=cityBounds(board,p);return Math.min((b.right-b.left)/(baseBounds.right-baseBounds.left),(b.bottom-b.top)/(baseBounds.bottom-baseBounds.top));};
+    let scale=nominalScale(after)/nominalScale(before);
+    const oldCenter={x:(oldBounds.left+oldBounds.right)/2,y:(oldBounds.top+oldBounds.bottom)/2},newCenter={x:(newBounds.left+newBounds.right)/2,y:(newBounds.top+newBounds.bottom)/2};
+    // Switching sizes back and forth restores the layout without gradual
+    // shrinking. If towns were moved to new edges, fit those edits as well.
+    for(const c of board.cities){const dx=Math.abs(c.x-oldCenter.x),dy=Math.abs(c.y-oldCenter.y);if(dx)scale=Math.min(scale,(newBounds.right-newBounds.left)/2/dx);if(dy)scale=Math.min(scale,(newBounds.bottom-newBounds.top)/2/dy);}
+    for(const c of board.cities){c.x=newCenter.x+(c.x-oldCenter.x)*scale;c.y=newCenter.y+(c.y-oldCenter.y)*scale;if(Number.isFinite(c.labelDX))c.labelDX*=scale;if(Number.isFinite(c.labelDY))c.labelDY*=scale;}
+    for(const r of board.routes){r.bend=Math.max(-90,Math.min(90,r.bend*scale));if(r.badgeOffsets)r.badgeOffsets=scaledBadgeOffsets(r.badgeOffsets,scale);}
+    board.paper=paper;board.orientation=orientation;
+    if(board.terrain){board.terrain.x*=after.width/before.width;board.terrain.y*=after.height/before.height;}
+  }
+  function mapPrintCSS(board){const {width,height}=size(board);return `@page{size:${width}mm ${height}mm;margin:0}@media print{body[data-print="board"] .print-only,body[data-print="board"] .print-only>svg{width:${width}mm;height:${height}mm}}`;}
+  function scaleMap(board,target,source=copy(board)){
+    if(!Number.isFinite(target)||target<25||target>200)throw Error('Map scale must be between 25% and 200%.');
+    const base=source.mapScale||100;
+    if(!source.cities.length){board.mapScale=target;return target;}
+    const xs=source.cities.map(c=>c.x),ys=source.cities.map(c=>c.y);
+    const center={x:(Math.min(...xs)+Math.max(...xs))/2,y:(Math.min(...ys)+Math.max(...ys))/2};
+    const actual=target,factor=actual/base;
+    board.cities=source.cities.map(c=>({...c,x:center.x+(c.x-center.x)*factor,y:center.y+(c.y-center.y)*factor,...(Number.isFinite(c.labelDX)?{labelDX:c.labelDX*factor,labelDY:c.labelDY*factor}:{})}));
+    board.routes=source.routes.map(r=>({...r,bend:Math.max(-90,Math.min(90,r.bend*factor)),...(r.badgeOffsets?{badgeOffsets:scaledBadgeOffsets(r.badgeOffsets,factor)}:{})}));
+    board.mapScale=actual;return actual;
+  }
+  function validate(input){
+    if(!input||!Array.isArray(input.cities)||!Array.isArray(input.routes))throw Error('This file must contain cities and routes arrays.');
+    if(input.cities.length>200||input.routes.length>1000)throw Error('Maximum project size: 200 cities and 1,000 routes.');
+    if(input.background!==undefined&&(typeof input.background!=='string'||!/^#[0-9a-f]{6}$/i.test(input.background)))throw Error('Map background must be a six-digit hex color.');
+    if(input.paper!==undefined&&!Object.hasOwn(paperSizes,input.paper))throw Error('Unsupported map paper size.');
+    if(input.orientation!==undefined&&!['landscape','portrait'].includes(input.orientation))throw Error('Unsupported map orientation.');
+    if(input.mapScale!==undefined&&(!Number.isFinite(input.mapScale)||input.mapScale<25||input.mapScale>200))throw Error('Invalid map scale.');
+    if(input.elementScale!==undefined&&(!Number.isFinite(input.elementScale)||input.elementScale<50||input.elementScale>200))throw Error('Element size must be between 50% and 200%.');
+    if(input.showTitle!==undefined&&typeof input.showTitle!=='boolean')throw Error('Show title must be true or false.');
+    const board={version:1,title:String(input.title||'MY TRAIN MAP').slice(0,65),showTitle:input.showTitle!==false,paper:input.paper||'a3',orientation:input.orientation||'landscape',mapScale:input.mapScale??100,elementScale:input.elementScale??100,background:input.background||'#eef3e8',terrain:emptyTerrain(),trackers:input.trackers!==false,scoring:input.scoring!==false,cities:[],routes:[],tickets:[]};
+    const {width,height}=size(board);
+    if(input.terrain!==undefined){
+      if(!input.terrain||typeof input.terrain!=='object'||Array.isArray(input.terrain))throw Error('Invalid background layer.');
+      const t={...emptyTerrain(),...input.terrain};
+      if(!['none','uploaded'].includes(t.type)||!Number.isFinite(t.opacity)||t.opacity<0||t.opacity>100||!Number.isFinite(t.zoom)||t.zoom<50||t.zoom>300||!Number.isFinite(t.x)||!Number.isFinite(t.y)||Math.abs(t.x)>100*(width+height)||Math.abs(t.y)>100*(width+height))throw Error('Invalid background position, opacity, or zoom.');
+      const asset=t.asset===undefined?null:cleanSvgAsset(t.asset);
+      if(t.type==='uploaded'&&!asset)throw Error('The project is missing its uploaded SVG.');
+      board.terrain={type:t.type,opacity:t.opacity,zoom:t.zoom,x:t.x,y:t.y,...(asset?{asset}:{})};
+    }
+    const ids=new Set(),routeIds=new Set();
+    for(const c of input.cities){
+      if(!c||typeof c.id!=='string'||!c.id||c.id.length>100||ids.has(c.id)||typeof c.name!=='string'||!c.name.trim()||!Number.isFinite(c.x)||!Number.isFinite(c.y))throw Error('A city is missing a unique ID, a name, or valid coordinates.');
+      if(Math.abs(c.x)>100*(width+height)||Math.abs(c.y)>100*(width+height))throw Error('City position is outside the supported coordinate range.');
+      const city={id:c.id,name:c.name.trim().slice(0,60),x:c.x,y:c.y};
+      if(c.labelDX!==undefined||c.labelDY!==undefined||c.labelAnchor!==undefined){
+        if(!Number.isFinite(c.labelDX)||!Number.isFinite(c.labelDY)||Math.abs(c.labelDX)>100*(width+height)||Math.abs(c.labelDY)>100*(width+height)||!['start','middle','end'].includes(c.labelAnchor??'middle'))throw Error('City label offsets or alignment are invalid.');
+        Object.assign(city,{labelDX:c.labelDX,labelDY:c.labelDY,labelAnchor:c.labelAnchor??'middle'});
+      }
+      ids.add(c.id);board.cities.push(city);
+    }
+    for(const r of input.routes){
+      if(!r||typeof r.id!=='string'||!r.id||r.id.length>150||routeIds.has(r.id)||!ids.has(r.from)||!ids.has(r.to)||r.from===r.to||!Object.hasOwn(palette,r.color)||!Number.isInteger(r.length)||r.length<1||r.length>999||!Number.isFinite(r.bend??0)||Math.abs(r.bend??0)>90)throw Error('A route has invalid endpoints, color, length, curve, or ID.');
+      const water=r.water??false,tunnel=r.tunnel??false,locomotives=r.locomotives??(water?1:0),tunnelDraw=r.tunnelDraw??3;
+      if(typeof water!=='boolean'||typeof tunnel!=='boolean'||!Number.isInteger(locomotives)||locomotives<(water?1:0)||locomotives>r.length||!Number.isInteger(tunnelDraw)||tunnelDraw<1||tunnelDraw>99)throw Error('Invalid water-route or tunnel requirements.');
+      const route={id:r.id,from:r.from,to:r.to,color:r.color,length:r.length,bend:r.bend||0,water,locomotives,tunnel,tunnelDraw};
+      if(r.badgeOffsets!==undefined){
+        if(!r.badgeOffsets||typeof r.badgeOffsets!=='object'||Array.isArray(r.badgeOffsets))throw Error('Invalid special badge offsets.');
+        route.badgeOffsets={};
+        for(const kind of Object.keys(r.badgeOffsets)){
+          const offset=r.badgeOffsets[kind];
+          if(!['locomotive','tunnel'].includes(kind)||!offset||!Number.isFinite(offset.along)||!Number.isFinite(offset.normal)||Math.abs(offset.along)>100*(width+height)||Math.abs(offset.normal)>100*(width+height))throw Error('Invalid special badge offsets.');
+          route.badgeOffsets[kind]={along:offset.along,normal:offset.normal};
+        }
+      }
+      routeIds.add(r.id);board.routes.push(route);
+    }
+    if(input.tickets!==undefined&&!Array.isArray(input.tickets))throw Error('Tickets must be an array.');
+    if((input.tickets||[]).length>1000)throw Error('Maximum of 1,000 tickets.');
+    const ticketIds=new Set(),ticketPairs=new Set();
+    for(const t of input.tickets||[]){
+      if(!t||typeof t.id!=='string'||!t.id||t.id.length>150||ticketIds.has(t.id)||!ids.has(t.from)||!ids.has(t.to)||t.from===t.to||!Number.isInteger(t.points)||t.points<1||t.points>999999)throw Error('A ticket has invalid endpoints, points, or ID.');
+      const key=JSON.stringify([t.from,t.to].sort());if(ticketPairs.has(key))throw Error('Duplicate destination ticket.');
+      ticketIds.add(t.id);ticketPairs.add(key);board.tickets.push({id:t.id,from:t.from,to:t.to,points:t.points});
+    }
+    // Connections saved by earlier versions may have independent lane bends.
+    // Keep the first lane's curve and align its sibling tracks on import.
+    const aligned=new Set();
+    for(const r of board.routes)if(!aligned.has(r.id)){
+      bendTracks(board,r,r.bend);setLength(board,r,r.length);for(const p of peers(board,r))aligned.add(p.id);
+    }
+    return board;
+  }
+  function geometry(board,r){
+    const {width,height}=size(board);
+    const s=details(board);
+    const a=board.cities.find(c=>c.id===r.from),b=board.cities.find(c=>c.id===r.to);
+    const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||1,nx=-dy/dist,ny=dx/dist;
+    const group=peers(board,r);
+    const spacing=Math.min(3.8,7.6/Math.max(1,group.length-1))*s;
+    const lane=(group.indexOf(r)-(group.length-1)/2)*spacing;
+    // Every lane offsets the same centerline along its local normal. Changing
+    // control points per lane would fan the tracks apart instead of making
+    // genuinely side-by-side tracks. Canonical orientation handles reversed IDs.
+    const orientation=r.from<r.to?1:-1;
+    const laneOffset=lane*orientation;
+    const requestedCurve=(group[0].bend||0)*(group[0].from===r.from?1:-1);
+    const maxLane=(group.length-1)*spacing/2;
+    // Keep short parallel connections from folding their inner offset curve.
+    const maxCurve=group.length>1?Math.min(90,dist*dist/(4*(maxLane+2.4*s))):90;
+    const curve=Math.max(-maxCurve,Math.min(maxCurve,requestedCurve));
+    const area=mapArea(board),edge=1.5*s;
+    const outside=[a,b].some(p=>p.x<area.left+edge||p.x>area.right-edge||p.y<area.top+edge||p.y>area.bottom-edge);
+    const control={x:(a.x+b.x)/2+nx*curve,y:(a.y+b.y)/2+ny*curve};
+    const cx=outside?control.x:Math.max(area.left+edge,Math.min(area.right-edge,control.x));
+    const cy=outside?control.y:Math.max(area.top+edge,Math.min(area.bottom-edge,control.y));
+    const basePoint=t=>{const u=1-t;return {x:u*u*a.x+2*u*t*cx+t*t*b.x,y:u*u*a.y+2*u*t*cy+t*t*b.y};};
+    const velocity=t=>({x:2*((1-t)*(cx-a.x)+t*(b.x-cx)),y:2*((1-t)*(cy-a.y)+t*(b.y-cy))});
+    const point=t=>{const p=basePoint(t),v=velocity(t),speed=Math.hypot(v.x,v.y)||1;return {x:p.x-laneOffset*v.y/speed,y:p.y+laneOffset*v.x/speed};};
+    const derivative=t=>{
+      const v=velocity(t),speed=Math.hypot(v.x,v.y)||1,ax=2*(b.x-2*cx+a.x),ay=2*(b.y-2*cy+a.y),dot=v.x*ax+v.y*ay;
+      return {x:v.x+laneOffset*(-ay/speed+v.y*dot/speed**3),y:v.y+laneOffset*(ax/speed-v.x*dot/speed**3)};
+    };
+    function pathBetween(t0,t1){
+      const start=point(t0),end=point(t1),span=t1-t0;
+      if(!laneOffset){const v=velocity(t0),control={x:start.x+span*v.x/2,y:start.y+span*v.y/2};return `M ${start.x.toFixed(3)} ${start.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${end.x.toFixed(3)} ${end.y.toFixed(3)}`;}
+      // Smooth vector cubics approximate the normal offset, which is not itself
+      // a quadratic. Tangents remain continuous at every subdivision.
+      let d=`M ${start.x.toFixed(3)} ${start.y.toFixed(3)}`;
+      const steps=24,h=span/steps;
+      for(let i=0;i<steps;i++){
+        const left=t0+i*h,right=left+h,p=point(left),q=point(right),v=derivative(left),w=derivative(right);
+        d+=` C ${(p.x+h*v.x/3).toFixed(3)} ${(p.y+h*v.y/3).toFixed(3)} ${(q.x-h*w.x/3).toFixed(3)} ${(q.y-h*w.y/3).toFixed(3)} ${q.x.toFixed(3)} ${q.y.toFixed(3)}`;
+      }return d;
+    }
+    // All lanes end at the same longitudinal position and keep their spacing
+    // right up to their square ends. The centerline stops short of the city.
+    function trimmed(radius){
+      const middle=basePoint(.5);
+      radius=Math.min(radius,Math.hypot(middle.x-a.x,middle.y-a.y)*.92,Math.hypot(middle.x-b.x,middle.y-b.y)*.92);
+      function parameter(center,start,end){
+        for(let i=0;i<35;i++){const t=(start+end)/2,p=basePoint(t);if(Math.hypot(p.x-center.x,p.y-center.y)<radius)start=t;else end=t;}return(start+end)/2;
+      }
+      const t0=parameter(a,0,.5),t1=parameter(b,1,.5),start=point(t0),end=point(t1);
+      return {start,end,t0,t1,d:pathBetween(t0,t1)};
+    }
+    const outer=trimmed(3.7*s),inner=trimmed(4.3*s);
+    return {a,b,nx,ny,curve,cx,cy,point,basePoint,derivative,laneOffset,start:outer.start,end:outer.end,d:outer.d,innerD:inner.d};
+  }
+  function nearestParameter(g,p){
+    let t=.5,best=Infinity;
+    for(let i=1;i<100;i++){const candidate=i/100,q=g.point(candidate),d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<best){best=d;t=candidate;}}
+    return Math.max(.1,Math.min(.9,t));
+  }
+  function draggedBend(g,initialBend,start,current,t){
+    const displacement=(current.x-start.x)*g.nx+(current.y-start.y)*g.ny;
+    return Math.max(-90,Math.min(90,initialBend+displacement/(2*t*(1-t))));
+  }
+  const rectHit=(x,y,rect,pad=0)=>x>rect.x-pad&&x<rect.x+rect.w+pad&&y>rect.y-pad&&y<rect.y+rect.h+pad;
+  function countBadge(board,r){
+    const group=peers(board,r);
+    // Keep one fixed-size count on a real lane: middle for triples, first for
+    // doubles. The representative lane also owns the badge's edit/drag target.
+    const track=group[Math.floor((group.length-1)/2)];
+    const tunnel=group.some(p=>p.tunnel);
+    return {id:r.id,trackId:track.id,color:track.color,tunnel,...geometry(board,track).point(.5),radius:(tunnel?3.2:2.7)*details(board)};
+  }
+  function badgeMarkup(board,n,editable=false){
+    const r=board.routes.find(r=>r.id===n.id),e=escape,x=n.x.toFixed(3),y=n.y.toFixed(3);
+    const size=(String(r.length).length===3?2.4:3.2)*details(board);
+    // Only the number and an invisible hit target belong here. The counter's
+    // outline is formed with the track in the same outer/inner paint layers.
+    const s=`<g id="route-${e(r.id)}-badge" ${editable?`data-route="${e(n.trackId)}"`:''}>${editable?`<circle cx="${x}" cy="${y}" r="${n.radius+.3*details(board)}" fill="transparent"/>`:''}`;
+    return s+`<text id="route-${e(r.id)}-length" class="route-number" x="${x}" y="${y}" dominant-baseline="central" style="fill:${palette[n.color]};stroke:none;font-size:${size}px">${r.length}</text></g>`;
+  }
+  function scaledBadgeOffsets(offsets,factor){return Object.fromEntries(Object.entries(offsets).map(([kind,p])=>[kind,{along:p.along*factor,normal:p.normal*factor}]));}
+  function badgeFrame(board,r){
+    const g=geometry(board,r),v=g.derivative(.5),speed=Math.hypot(v.x,v.y)||1;
+    return {origin:g.point(.5),tangent:{x:v.x/speed,y:v.y/speed},normal:{x:-v.y/speed,y:v.x/speed}};
+  }
+  function moveRouteBadge(board,r,kind,position){
+    if(!['locomotive','tunnel'].includes(kind)||!Number.isFinite(position.x)||!Number.isFinite(position.y))throw Error('Invalid badge position.');
+    const f=badgeFrame(board,r),dx=position.x-f.origin.x,dy=position.y-f.origin.y;
+    r.badgeOffsets={...(r.badgeOffsets||{}),[kind]:{along:dx*f.tangent.x+dy*f.tangent.y,normal:dx*f.normal.x+dy*f.normal.y}};
+  }
+  function routeBadges(board,r){
+    const s=details(board),f=badgeFrame(board,r),requirements=[];
+    if(r.water)requirements.push({kind:'locomotive',text:String(r.locomotives||1),width:Math.max(6.4,String(r.locomotives||1).length*1.6+3)*s,height:4.4*s});
+    if(r.tunnel&&(r.tunnelDraw||3)!==3)requirements.push({kind:'tunnel',text:String(r.tunnelDraw),width:Math.max(6.4,String(r.tunnelDraw).length*1.6+3)*s,height:4.4*s});
+    if(!requirements.length)return [];
+    const group=peers(board,r),index=group.indexOf(r);
+    const nearest=Math.min(...group.map(p=>{const pt=geometry(board,p).point(.5);return (pt.x-f.origin.x)*f.normal.x+(pt.y-f.origin.y)*f.normal.y;}));
+    const total=requirements.reduce((sum,b)=>sum+b.width,0)+(requirements.length-1)*1.8*s;
+    let cursor=-total/2;
+    return requirements.map(b=>{
+      const offset=r.badgeOffsets?.[b.kind]||{along:cursor+b.width/2,normal:nearest-(6.5+index*8)*s};cursor+=b.width+1.8*s;
+      return {...b,x:f.origin.x+f.tangent.x*offset.along+f.normal.x*offset.normal,y:f.origin.y+f.tangent.y*offset.along+f.normal.y*offset.normal};
+    });
+  }
+  function burstPoints(x,y,radius,inner=radius*.78){return Array.from({length:24},(_,i)=>{const angle=-Math.PI/2+i*Math.PI/12,r=i%2?inner:radius;return `${(x+Math.cos(angle)*r).toFixed(3)},${(y+Math.sin(angle)*r).toFixed(3)}`;}).join(' ');}
+  function countShape(n,radius,fill,className){
+    return n.tunnel?`<polygon class="${className}" points="${burstPoints(n.x,n.y,radius)}" fill="${fill}" stroke="none"/>`:`<circle class="${className}" cx="${n.x.toFixed(3)}" cy="${n.y.toFixed(3)}" r="${radius.toFixed(3)}" fill="${fill}" stroke="none"/>`;
+  }
+  function specialBadgesMarkup(board,editable=false){
+    const s=details(board);let out='<g id="special-route-badges">';
+    for(const r of board.routes)for(const b of routeBadges(board,r)){
+      const ink=b.kind==='tunnel'?'#9f426b':'#28688f';
+      out+=`<g id="route-${escape(r.id)}-${b.kind}-badge" ${editable?`data-route="${escape(r.id)}" data-special-badge="${b.kind}" style="cursor:move"`:''}><title>${b.kind==='locomotive'?`At least ${r.locomotives} locomotives in the cards paid`:`Draw ${r.tunnelDraw} cards for the tunnel check`}</title>`;
+      out+=`<rect class="${b.kind}-badge-shape" x="${b.x-b.width/2}" y="${b.y-b.height/2}" width="${b.width}" height="${b.height}" rx="${b.height/2}" fill="${b.kind==='tunnel'?'#f9dce8':'#d9edf9'}" stroke="${ink}" stroke-width="${.4*s}"/>`;
+      out+=`<text x="${b.x}" y="${b.y}" text-anchor="middle" dominant-baseline="central" style="fill:${ink};font-size:${2.7*s}px;font-weight:700">${b.text}</text></g>`;
+    }return out+'</g>';
+  }
+  function layout(board){
+    const {width,height}=size(board);
+    const s=details(board);
+    const tracks=board.routes.map(r=>({r,g:geometry(board,r)}));
+    const samples=tracks.flatMap(({g})=>Array.from({length:51},(_,i)=>g.point(i/50)));
+    // Spatial buckets keep live dragging responsive on a 100-route board.
+    const buckets=new Map();
+    for(const p of samples){const key=`${Math.floor(p.x/10)},${Math.floor(p.y/10)}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(p);}
+    function trackHits(box,pad){
+      let count=0;
+      for(let x=Math.floor((box.x-pad)/10);x<=Math.floor((box.x+box.w+pad)/10);x++)for(let y=Math.floor((box.y-pad)/10);y<=Math.floor((box.y+box.h+pad)/10);y++)
+        for(const p of buckets.get(`${x},${y}`)||[])if(rectHit(p.x,p.y,box,pad))count++;
+      return count;
+    }
+    const labels=[],numbers=[],numbered=new Set();
+    for(const {r,g}of tracks){
+      const key=JSON.stringify([r.from,r.to].sort());
+      if(!numbered.has(key)){numbered.add(key);numbers.push(countBadge(board,r,g));}
+    }
+    for(const c of board.cities){
+      const w=Math.max(5,c.name.length*1.67)*s,candidates=[];
+      if(Number.isFinite(c.labelDX)&&Number.isFinite(c.labelDY)){
+        const x=c.x+c.labelDX,y=c.y+c.labelDY,anchor=c.labelAnchor||'middle';
+        labels.push({id:c.id,x,y,anchor,box:{x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h:4*s}});
+        continue;
+      }
+      for(const gap of [6,9,12].map(v=>v*s))candidates.push([0,-gap,'middle'],[0,gap+3*s,'middle'],[gap,s,'start'],[-gap,s,'end'],[gap,-gap/2,'start'],[-gap,-gap/2,'end'],[gap,gap/2+2*s,'start'],[-gap,gap/2+2*s,'end']);
+      let best;
+      for(const [dx,dy,anchor]of candidates){
+        const x=c.x+dx,y=c.y+dy,box={x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h:4*s};
+        let score=Math.hypot(dx,dy)*.1;
+        score+=trackHits(box,2.8*s)*5;
+        score+=board.cities.filter(p=>p.id!==c.id&&rectHit(p.x,p.y,box,4*s)).length*250;
+        score+=labels.filter(p=>box.x<p.box.x+p.box.w+1&&box.x+w>p.box.x-1&&box.y<p.box.y+5&&box.y+4>p.box.y).length*250;
+        score+=numbers.filter(p=>rectHit(p.x,p.y,box,p.radius+.8)).length*250;
+        const area=mapArea(board),halo=.65*s;
+        if(box.x<area.left+halo||box.x+w>area.right-halo||box.y<area.top+halo||box.y+box.h>area.bottom-halo)score+=10000;
+        if(!best||score<best.score)best={id:c.id,x,y,anchor,box,score};
+      }labels.push(best);
+    }
+    return {tracks,labels,numbers};
+  }
+  function pinLabels(board){
+    for(const label of layout(board).labels){
+      const city=board.cities.find(c=>c.id===label.id);
+      if(!Number.isFinite(city.labelDX)||!Number.isFinite(city.labelDY))Object.assign(city,{labelDX:label.x-city.x,labelDY:label.y-city.y,labelAnchor:label.anchor});
+    }
+  }
+  function content(board,editable=false){
+    const {width,height,label}=size(board);
+    const element=details(board);
+    const e=escape,{tracks,labels,numbers}=layout(board);
+    const background=board.background||'#eef3e8';
+    const rgb=[1,3,5].map(i=>parseInt(background.slice(i,i+2),16));
+    const mapInk=rgb[0]*.299+rgb[1]*.587+rgb[2]*.114>145?'#20242a':'#f6f8fa';
+    let s=`<title>${e(board.title)}</title><desc>${label} ${board.orientation||'landscape'} dry-erase train board. ${board.cities.length} cities; ${board.routes.length} routes.</desc><style>text{font-family:Arial,Helvetica,sans-serif;fill:#20242a}.map-reference text,#heading text,#train-trackers text{fill:${mapInk}}.city-label{font-size:${3.4*element}px;font-weight:600;fill:${mapInk};paint-order:stroke fill;stroke:${background};stroke-width:${1.3*element}px;stroke-linejoin:round}.route-number{font-size:3.5px;font-weight:700;text-anchor:middle;paint-order:stroke fill;stroke:white;stroke-width:1.1px}</style><rect id="map-background-fill" width="${width}" height="${height}" fill="${background}"/>${terrainMarkup(board)}`;
+    if(board.showTitle!==false)s+=`<g id="heading"><text x="10" y="13" font-size="6" font-weight="700" letter-spacing=".4">${e(board.title)}</text></g>`;
+    if(board.trackers){
+      const boxWidth=Math.min(7.2,(width-45-44*.8-8*1.5)/45);
+      s+='<g id="train-trackers">';
+      for(let i=1;i<=5;i++){
+        const y=trackerTop(board)+(i-1)*6.4;s+=`<g id="player-${i}-tracker"><text x="10" y="${y+3.7}" font-size="3.1">Player ${i}</text>`;
+        for(let section=0;section<9;section++){
+          s+=`<g id="player-${i}-section-${section+1}">`;
+          for(let box=0;box<5;box++){
+            const index=section*5+box,x=35+index*(boxWidth+.8)+section*1.5;
+            s+=`<rect id="player-${i}-box-${index+1}" x="${x.toFixed(3)}" y="${y}" width="${Number(boxWidth.toFixed(3))}" height="4.8" rx=".9" ry=".9" fill="white" stroke="#535860" stroke-width=".22"/>`;
+          }s+='</g>';
+        }s+='</g>';
+      }s+='</g>';
+    }
+    s+='<g id="routes" fill="none" stroke-linecap="butt" stroke-linejoin="round">';
+    const badgeTracks=new Map(numbers.map(n=>[n.trackId,n]));
+    const orderedTracks=[...tracks.filter(({r})=>!badgeTracks.has(r.id)),...tracks.filter(({r})=>badgeTracks.has(r.id))];
+    for(const {r,g}of orderedTracks){
+      const n=badgeTracks.get(r.id);
+      s+=`<g id="route-${e(r.id)}" ${editable?`data-route="${e(r.id)}" tabindex="0" role="button" aria-label="Edit route: ${e(g.a.name)} to ${e(g.b.name)}, ${r.length} trains"`:''} data-from="${e(r.from)}" data-to="${e(r.to)}" data-length="${r.length}" data-color="${r.color}"><title>${e(g.a.name)} – ${e(g.b.name)}: ${r.length} trains, ${r.color}</title>`;
+      if(editable)s+=`<path d="${g.d}" stroke="transparent" stroke-width="9" pointer-events="stroke"/>`;
+      s+=`<path id="route-${e(r.id)}-outline" d="${g.d}" stroke="${palette[r.color]}" stroke-width="${(3*element).toFixed(1)}"/>`;
+      if(n)s+=countShape(n,n.radius+.3*element,palette[n.color],'count-outline');
+      s+=`<path id="route-${e(r.id)}-interior" d="${g.innerD}" stroke="white" stroke-width="${1.8*element}"/>`;
+      if(n)s+=countShape(n,n.radius-.3*element,'white','count-circle');
+      s+='</g>';
+    }s+='</g><g id="route-length-labels">';
+    for(const n of numbers)s+=badgeMarkup(board,n,editable);s+='</g>'+specialBadgesMarkup(board,editable)+`<g id="cities" fill="white" stroke="#20242a" stroke-width="${.65*element}">`;
+    for(const c of board.cities)s+=`<g ${editable?`data-city="${e(c.id)}" tabindex="0" role="button" aria-label="Select city: ${e(c.name)}"`:''}><title>${e(c.name)}</title>${editable?`<circle cx="${c.x}" cy="${c.y}" r="5" fill="transparent" stroke="none"/>`:''}<circle id="city-${e(c.id)}" cx="${c.x}" cy="${c.y}" r="${2.4*element}"/></g>`;
+    s+='</g><g id="city-labels">';for(const l of labels){const c=board.cities.find(c=>c.id===l.id);s+=`<text id="label-${e(c.id)}" class="city-label" x="${l.x}" y="${l.y}" text-anchor="${l.anchor}" ${editable?`data-city="${e(c.id)}" data-city-label="${e(c.id)}"`:''}>${e(c.name)}</text>`;}s+='</g>';
+    if(board.scoring){s+=`<g id="scoring-reference" class="map-reference" transform="translate(10 ${height-7})"><text font-size="2.8" font-weight="700">ROUTE SCORING</text>`;[1,2,3,4,5,6].forEach((v,i)=>{s+=`<text x="${37+i*21}" font-size="2.8">${v} = ${[1,2,4,7,10,15][i]} pt${v===1?'':'s'}</text>`;});s+='</g>';}
+    return s;
+  }
+  const svg=board=>{const {width,height}=size(board);return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}mm" height="${height}mm" viewBox="0 0 ${width} ${height}">${content(board)}</svg>\n`;};
+  function shortestDistance(board,from,to){
+    const costs=new Map(board.cities.map(c=>[c.id,Infinity])),pending=new Set(costs.keys());if(!costs.has(from)||!costs.has(to))return null;costs.set(from,0);
+    while(pending.size){let next=null,best=Infinity;for(const id of pending)if(costs.get(id)<best){next=id;best=costs.get(id);}if(next===null)return null;if(next===to)return best;pending.delete(next);for(const r of board.routes){const other=r.from===next?r.to:r.to===next?r.from:null;if(other&&pending.has(other))costs.set(other,Math.min(costs.get(other),best+r.length));}}
+    return null;
+  }
+  function wrapName(name,max=25){
+    const lines=[];let line='';for(const word of name.split(/\s+/)){let rest=word;while(rest.length>max){if(line){lines.push(line);line='';}lines.push(rest.slice(0,max));rest=rest.slice(max);}if(!rest)continue;if(line&&(line+' '+rest).length>max){lines.push(line);line=rest;}else line+=(line?' ':'')+rest;}if(line)lines.push(line);return lines;
+  }
+  function ticketMap(board,t){
+    // Match the selected board's aspect ratio, not the city bounds.
+    // A uniform inset keeps dots and their A/B labels inside the frame.
+    const {width,height}=size(board),mapWidth=Math.min(44,31.2*width/height),frame={x:39+(44-mapWidth)/2,y:19,width:mapWidth,height:mapWidth*height/width};
+    const scale=(frame.width-6)/width,origin={x:frame.x+3,y:frame.y+3*height/width};
+    const positions=board.cities.map(c=>({id:c.id,x:origin.x+c.x*scale,y:origin.y+c.y*scale}));
+    const a=positions.find(p=>p.id===t.from),b=positions.find(p=>p.id===t.to);
+    let markup=`<g class="ticket-map"><rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="1" fill="#f3f6f8" stroke="#d2dbe1" stroke-width=".2"/>`;
+    for(const p of positions)markup+=`<circle cx="${p.x}" cy="${p.y}" r=".4" fill="#b8c4cc"/>`;
+    markup+=`<path d="M${a.x} ${a.y} L${b.x} ${b.y}" fill="none" stroke="#6f8392" stroke-width=".3" stroke-dasharray="1 .8"/>`;
+    for(const [p,tag,color,dx,dy]of [[a,'A','#0068c9',-2,-2],[b,'B','#e66b00',2,2.7]])markup+=`<circle class="ticket-map-endpoint" data-city="${escape(p.id)}" cx="${p.x}" cy="${p.y}" r="1.1" fill="white" stroke="${color}" stroke-width=".5"/><text x="${p.x+dx}" y="${p.y+dy}" font-size="2" text-anchor="middle" style="fill:${color};font-weight:700">${tag}</text>`;
+    return {positions,scale,frame,origin,markup:markup+'</g>'};
+  }
+  const ticketSize={width:88.9,height:63.5,border:3,paperWidth:82.9,paperHeight:57.5};
+  function ticketCard(board,t){
+    const a=board.cities.find(c=>c.id===t.from),b=board.cities.find(c=>c.id===t.to),e=escape;
+    function name(city,y,tag,color){let lines=wrapName(city.name,18);if(lines.length>3)lines=wrapName(city.name,25);const font=lines.length>3?2.7:3.2,leading=lines.length>3?3.2:3.7;return `<circle cx="7" cy="${y-1.2}" r="1.5" fill="${color}"/><text x="7" y="${y-1.1}" text-anchor="middle" dominant-baseline="central" font-size="1.9" style="fill:white">${tag}</text><text x="11" y="${y}" font-size="${font}" font-weight="700">${lines.map((line,i)=>`<tspan x="11" dy="${i?leading:0}" textLength="${Math.min(25,line.length*font*.53)}" lengthAdjust="spacingAndGlyphs">${e(line)}</tspan>`).join('')}</text>`;}
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${ticketSize.paperWidth}mm" height="${ticketSize.paperHeight}mm" viewBox="0 0 88.9 63.5" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${e(a.name)} to ${e(b.name)}, ${t.points} points"><style>text{font-family:Arial,Helvetica,sans-serif;fill:#243647}</style><rect x=".2" y=".2" width="88.5" height="63.1" fill="white" stroke="#89949e" stroke-width=".25"/><text x="6" y="7" font-size="2.5" letter-spacing=".45">DESTINATION TICKET</text><path d="M6 10 H82.9" stroke="#bdc6cd" stroke-width=".25"/>${name(a,17,'A','#0068c9')}${name(b,30,'B','#e66b00')}${ticketMap(board,t).markup}<circle class="ticket-points-circle" cx="14" cy="49" r="8" fill="#edf0f3" stroke="#7b8791" stroke-width=".35"/><text x="14" y="48.5" text-anchor="middle" dominant-baseline="central" font-size="${String(t.points).length>4?3.7:6}" font-weight="700">${t.points}</text><text x="14" y="54" text-anchor="middle" font-size="2.1">POINTS</text><text x="6" y="60" font-size="1.8" textLength="${Math.min(58,board.title.length*1.05)}" lengthAdjust="spacingAndGlyphs">${e(board.title)}</text></svg>`;
+  }
+  function ticketSheets(board){
+    const pages=[];
+    for(let offset=0;offset<(board.tickets||[]).length;offset+=8){
+      let cards='',guides='';
+      for(let i=0;i<8&&offset+i<board.tickets.length;i++){
+        const {paperWidth,paperHeight,border}=ticketSize;
+        const x=17.55+(i%2)*91.9+border,y=8.2+Math.floor(i/2)*66.5+border;
+        const card=ticketCard(board,board.tickets[offset+i]).replace(`width="${paperWidth}mm" height="${paperHeight}mm"`,`width="${paperWidth}" height="${paperHeight}"`);
+        cards+=`<g class="ticket-slot" data-ticket-id="${escape(board.tickets[offset+i].id)}" transform="translate(${x} ${y})">${card}</g>`;
+        for(const [cx,cy]of [[x,y],[x+paperWidth,y],[x,y+paperHeight],[x+paperWidth,y+paperHeight]])guides+=`<path d="M${cx-1.2} ${cy} H${cx-.4} M${cx+.4} ${cy} H${cx+1.2} M${cx} ${cy-1.2} V${cy-.4} M${cx} ${cy+.4} V${cy+1.2}"/>`;
+      }
+      pages.push(`<svg xmlns="http://www.w3.org/2000/svg" width="215.9mm" height="279.4mm" viewBox="0 0 215.9 279.4"><rect width="215.9" height="279.4" fill="white"/>${cards}<g class="paper-cut-guides" fill="none" stroke="#9aa2a9" stroke-width=".15">${guides}</g></svg>`);
+    }return pages;
+  }
+  function ticketHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escape(board.title)} — Tickets</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#eaf0f4;font-family:Arial,sans-serif}.toolbar{padding:16px;text-align:center}.toolbar button{padding:10px;font-size:16px}.page{width:215.9mm;height:279.4mm;margin:12px auto;background:white;break-inside:avoid;break-after:page}.page:last-child{break-after:auto}.page>svg{display:block;width:215.9mm;height:279.4mm}@media print{body{background:white}.toolbar{display:none}.page{margin:0}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · actual size / 100% · disable headers and footers</p><p>Cut paper to 82.9 × 57.5 mm using the guides. Laminate with at least 6 mm between inserts, then trim the film to 88.9 × 63.5 mm (3.5 × 2.5 inches), leaving 3 mm of clear film on every side.</p></div>${ticketSheets(board).map(page=>`<section class="page">${page}</section>`).join('')}</body></html>`;}
+  const trackingPlayers=[{name:'Player 1',ink:'#9b6049',tint:'#ead6c6'},{name:'Player 2',ink:'#627b7a',tint:'#d4e0da'},{name:'Player 3',ink:'#727848',tint:'#dfe1c4'},{name:'Player 4',ink:'#a37c3e',tint:'#eee0bc'},{name:'Player 5',ink:'#817b70',tint:'#ddd8cd'}];
+  const scoreSpiralPoint=(()=>{
+    const rx=93,ry=84,radius=76,pitch=16.5,h=rx-radius,v=ry-radius;
+    const line=(x,y,tx,ty,length)=>({length,at:d=>({x:x+tx*d,y:y+ty*d,tx,ty,nx:ty,ny:-tx,curvature:0})});
+    const arc=(cx,cy,angle)=>({length:Math.PI*radius/2,at:d=>{const a=angle+d/radius;return {x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a),tx:-Math.sin(a),ty:Math.cos(a),nx:Math.cos(a),ny:Math.sin(a),curvature:1/radius};}});
+    const segments=[line(0,-ry,1,0,h),arc(h,-v,-Math.PI/2),line(rx,-v,0,1,2*v),arc(h,v,0),line(h,ry,-1,0,2*h),arc(-h,v,Math.PI/2),line(-rx,v,0,-1,2*v),arc(-h,-v,Math.PI),line(-h,-ry,1,0,h)];
+    const perimeter=segments.reduce((sum,s)=>sum+s.length,0);
+    return (turn,phase)=>{
+      let distance=phase*perimeter,base,inset,slope,travelled=0;
+      for(const segment of segments){
+        if(distance<=segment.length+1e-8){
+          const u=Math.min(distance/segment.length,1);base=segment.at(u*segment.length);
+          inset=pitch*(travelled+segment.length*u*u*(3-2*u))/perimeter;slope=pitch*6*u*(1-u);break;
+        }distance-=segment.length;travelled+=segment.length;
+      }
+      // Ease the inward transition to zero slope at each segment seam. The following
+      // turns are true normal offsets of this same open, rounded-square curve.
+      const vx=perimeter*(1-inset*base.curvature)*base.tx-slope*base.nx,vy=perimeter*(1-inset*base.curvature)*base.ty-slope*base.ny,speed=Math.hypot(vx,vy);
+      const nx=-vy/speed,ny=vx/speed;
+      return {x:107.95+base.x-inset*base.nx+turn*pitch*nx,y:174+base.y-inset*base.ny+turn*pitch*ny,nx,ny};
+    };
+  })();
+  function scoreSpiral(){
+    // Sample the parallel spiral densely, then divide by arc length so
+    // all 301 scoring spaces have equal room, even near the centre.
+    const samples=[],turns=4;
+    for(let i=0;i<=12000;i++){
+      const progress=i/12000*turns,turn=Math.min(turns-1,Math.floor(progress)),p=scoreSpiralPoint(turn,progress-turn);
+      p.distance=i?samples[i-1].distance+Math.hypot(p.x-samples[i-1].x,p.y-samples[i-1].y):0;samples.push(p);
+    }
+    const length=samples.at(-1).distance;
+    function at(distance){
+      let lo=0,hi=samples.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(samples[mid].distance<distance)lo=mid;else hi=mid;}
+      const a=samples[lo],b=samples[hi],f=(distance-a.distance)/(b.distance-a.distance||1),dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1;
+      return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,tx:dx/n,ty:dy/n,nx:-dy/n,ny:dx/n};
+    }
+    const step=length/301;
+    return Array.from({length:301},(_,score)=>({score,frame:at((score+.5)*step),edge:[0,.5,1].map(part=>at((score+part)*step))}));
+  }
+  function trackingSheet(board){
+    const e=escape,f=n=>Number(n.toFixed(3));
+    let out=`<svg xmlns="http://www.w3.org/2000/svg" width="215.9mm" height="279.4mm" viewBox="0 0 215.9 279.4" role="img" aria-label="Five-player train and score tracking sheet"><title>Scoreboard</title><desc>Letter portrait. Five 45-train counters and five parallel squircle spiral score lanes with a shared number row from 0 through 300. Follow your player colour from the outside towards the centre.</desc><defs><linearGradient id="tracking-paper" x2=".8" y2="1"><stop stop-color="#dce7cc"/><stop offset="1" stop-color="#b8cda9"/></linearGradient><pattern id="tracking-grain" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".16" fill="#7b8064" opacity=".21"/></pattern></defs><style>text{font-family:Arial,Helvetica,sans-serif;fill:#283f3b}.score-number{font-size:1.5px;text-anchor:middle;dominant-baseline:central}.score-number.major{font-size:1.6px;font-weight:700}</style><rect width="215.9" height="279.4" fill="url(#tracking-paper)"/><path d="M0 170C45 135 92 206 150 174S205 163 216 180V280H0Z" fill="#91ad83" opacity=".27"/><g fill="none" stroke="#8a9878" stroke-width=".35" opacity=".3"><path d="M-10 100C45 65 76 135 140 100S200 70 225 110M-10 104C45 69 76 139 140 104S200 74 225 114M-10 108C45 73 76 143 140 108S200 78 225 118M-10 218C45 180 76 256 140 218S200 185 225 228M-10 222C45 184 76 260 140 222S200 189 225 232M-10 226C45 188 76 264 140 226S200 193 225 236"/></g><rect width="215.9" height="279.4" fill="url(#tracking-grain)"/><path d="M0 30C50 0 110 45 216 12M0 34C55 4 110 49 216 16M0 38C50 8 110 53 216 20" fill="none" stroke="#8ca47e" stroke-width=".45" opacity=".65"/><text x="10" y="13" font-size="5.6" font-weight="700" letter-spacing=".35">Scoreboard</text><rect x="7" y="23" width="201.9" height="40" rx="3" fill="#fffdf7" fill-opacity=".82" stroke="#d0dbce" stroke-width=".25"/>`;
+    const trainWidth=(173-44*.55-8*.9)/45;
+    for(let player=0;player<5;player++){
+      const p=trackingPlayers[player],y=26+player*6.6;
+      out+=`<g id="tracking-player-${player+1}-trains"><circle cx="12" cy="${y+2.4}" r="1.3" fill="${p.ink}"/><text x="15" y="${y+3.2}" font-size="2.5" font-weight="700">${p.name}</text>`;
+      for(let train=0;train<45;train++){
+        const x=32+train*(trainWidth+.55)+Math.floor(train/5)*.9;
+        out+=`<rect id="tracking-player-${player+1}-train-${train+1}" x="${f(x)}" y="${f(y)}" width="${f(trainWidth)}" height="4.8" rx=".8" fill="${p.tint}" stroke="${p.ink}" stroke-width=".22"/>`;
+      }out+='</g>';
+    }
+    out+='<text x="10" y="68" font-size="2.2">45 trains per player</text>';
+    const cells=scoreSpiral(),lane=2.4;
+    const point=(frame,d)=>({x:frame.x+frame.nx*d,y:frame.y+frame.ny*d});
+    const cellPath=(cell,offset)=>{const corners=[...cell.edge.map(frame=>point(frame,offset-lane/2)),...cell.edge.slice().reverse().map(frame=>point(frame,offset+lane/2))];return `M${corners.map(c=>`${f(c.x)} ${f(c.y)}`).join('L')}Z`;};
+    out+='<g id="shared-score-numbers" aria-label="Shared score row, 0 to 300">';
+    for(const cell of cells){
+      const center=point(cell.frame,-7.2);let angle=Math.atan2(cell.frame.ty,cell.frame.tx)*180/Math.PI;if(angle>90)angle-=180;if(angle< -90)angle+=180;
+      out+=`<g data-score-label="${cell.score}"><path d="${cellPath(cell,-7.2)}" fill="#e4e8d6" stroke="#909b7c" stroke-width=".12"/><text class="score-number${cell.score%5===0?' major':''}" transform="translate(${f(center.x)} ${f(center.y)}) rotate(${f(angle)})">${cell.score}</text></g>`;
+    }out+='</g>';
+    for(let player=0;player<5;player++){
+      const p=trackingPlayers[player];out+=`<g id="tracking-player-${player+1}-scores" aria-label="${p.name}, scores 0 to 300">`;
+      for(const cell of cells){
+        const offset=(player-2)*lane;
+        out+=`<g data-player="${player+1}" data-score="${cell.score}"><path d="${cellPath(cell,offset)}" fill="${p.tint}" stroke="${p.ink}" stroke-width="${cell.score%5===0?.22:.12}"/></g>`;
+      }out+='</g>';
+    }
+    const start=cells[0].edge[0];
+    out+='<text x="107.95" y="79" font-size="1.8" text-anchor="middle" font-weight="700">START →</text>';
+    for(let player=0;player<5;player++)out+=`<text x="${f(start.x-1.2)}" y="${f(start.y+start.ny*(player-2)*lane)}" text-anchor="end" dominant-baseline="central" font-size="1.5" style="fill:${trackingPlayers[player].ink};font-weight:700">P${player+1}</text>`;
+    out+='</svg>';
+    return out;
+  }
+  function trackingHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scoreboard</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#dce5df;font-family:Arial,sans-serif}.toolbar{text-align:center;padding:16px}button{font:inherit;padding:10px 16px}.page{width:215.9mm;height:279.4mm;margin:0 auto;background:white}.page>svg{display:block;width:100%;height:100%}@media print{.toolbar{display:none}body{background:white}.page{margin:0;break-inside:avoid}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · 100% / actual size · disable headers and footers · enable background graphics</p></div><main class="page">${trackingSheet(board)}</main></body></html>`;}
+  function components(board){const unseen=new Set(board.cities.map(c=>c.id));let count=0;while(unseen.size){count++;const stack=[unseen.values().next().value];unseen.delete(stack[0]);while(stack.length){const id=stack.pop();for(const r of board.routes){const next=r.from===id?r.to:r.to===id?r.from:null;if(next&&unseen.delete(next))stack.push(next);}}}return count;}
+  return {paperSizes,size,details,mapArea,cityBounds,scaleFromSlider,sliderFromScale,emptyTerrain,terrainState,cleanSvgAsset,terrainPlacement,terrainZoomFromSlider,terrainSliderFromZoom,resizeBoard,scaleMap,mapPrintCSS,palette,targets,empty,escape,copy,peers,setTrackCount,bendTracks,setLength,validate,geometry,nearestParameter,draggedBend,countBadge,badgeFrame,moveRouteBadge,routeBadges,layout,pinLabels,content,svg,shortestDistance,ticketSize,ticketMap,ticketCard,ticketSheets,ticketHTML,scoreSpiralPoint,scoreSpiral,trackingSheet,trackingHTML,components};
+})();
+</script>
+<script id="board-app">
+(() => {
+  'use strict';
+  const C=BoardCore,$=id=>document.getElementById(id),canvas=$('canvas'),storageKey='train-board-studio-v1';
+  let board=C.empty(),selectedCities=[],selectedRoute=null,length=2,color='blue',trackCount=1,drag=null,undo=[],redo=[],serial=0,curveBefore=null,backgroundBefore=null,scaleBefore=null,scaleSource=null,elementBefore=null,terrainBefore=null,editingBackground=false,ticketPairKey=null;
+  const snapshot=()=>JSON.stringify(board);
+  const id=prefix=>`${prefix}-${Date.now().toString(36)}-${(++serial).toString(36)}`;
+  const message=(text,error=false)=>{$('status').textContent=text;$('status').classList.toggle('error',error);$('status').classList.toggle('sr-only',!error);};
+  let saveFailure=false;
+  function persist(){try{localStorage.setItem(storageKey,snapshot());saveFailure=false;}catch{saveFailure=true;message('Browser storage unavailable. Use Save project to keep your work.',true);}}
+  function record(before){if(before===snapshot())return;undo.push(before);if(undo.length>100)undo.shift();redo=[];persist();}
+  function edit(fn){const before=snapshot();fn();record(before);render();}
+  function clearSelection(){selectedCities=[];selectedRoute=null;}
+  const currentRoute=()=>board.routes.find(r=>r.id===selectedRoute);
+  function draw(){
+    const paper=C.size(board);canvas.setAttribute('viewBox',`0 0 ${paper.width} ${paper.height}`);$('map-sheet').style.aspectRatio=`${paper.width}/${paper.height}`;
+    canvas.innerHTML=C.content(board,true);
+    const e=C.escape;let overlay='<g id="editor-selection" fill="none" pointer-events="none">';
+    for(const cid of selectedCities){const c=board.cities.find(c=>c.id===cid);if(c)overlay+=`<circle cx="${c.x}" cy="${c.y}" r="${4.3*C.details(board)}" stroke="#028f9c" stroke-width="${.8*C.details(board)}"/>`;}
+    if(selectedCities.length===2){const a=board.cities.find(c=>c.id===selectedCities[0]),b=board.cities.find(c=>c.id===selectedCities[1]);overlay+=`<path d="M${a.x},${a.y} L${b.x},${b.y}" stroke="#028f9c" stroke-width=".65" stroke-dasharray="2 2"/>`;}
+    const r=currentRoute();if(r){const g=C.geometry(board,r);canvas.querySelector('#route-length-labels').insertAdjacentHTML('beforebegin',`<path d="${g.d}" fill="none" stroke="#02a2b2" stroke-width="5" opacity=".2" pointer-events="none"/>`);}
+    canvas.insertAdjacentHTML('beforeend',overlay+'</g>');
+    if(editingBackground&&C.terrainState(board).type!=='none')canvas.insertAdjacentHTML('beforeend',`<rect id="terrain-drag-surface" width="${paper.width}" height="${paper.height}" fill="transparent" style="cursor:grab"/>`);
+    canvas.style.cursor=editingBackground?'grab':'';
+    $('empty-note').hidden=board.cities.length>0||C.terrainState(board).type!=='none';
+  }
+  function paintTerrain(){
+    const layer=canvas.querySelector('#terrain-background');if(!layer){draw();return;}
+    const t=C.terrainPlacement(board);layer.setAttribute('opacity',C.terrainState(board).opacity/100);
+    layer.firstElementChild.setAttribute('transform',`translate(${t.x} ${t.y}) scale(${t.scale}) translate(${-t.sourceX} ${-t.sourceY})`);
+  }
+  function controls(){
+    $('undo').disabled=!undo.length;$('redo').disabled=!redo.length;
+    if(document.activeElement!==$('board-title'))$('board-title').value=board.title;
+    $('show-title').checked=board.showTitle!==false;$('trackers').checked=board.trackers;$('scoring').checked=board.scoring;
+    $('map-background').value=board.background;
+    const terrain=C.terrainState(board);$('terrain-type').value=terrain.type;$('terrain-controls').hidden=terrain.type==='none';
+    $('uploaded-terrain-option').disabled=!terrain.asset;$('uploaded-terrain-option').textContent=terrain.asset?.name||'Uploaded SVG';$('remove-terrain').hidden=!terrain.asset;
+    $('terrain-opacity').value=terrain.opacity;$('terrain-opacity-value').textContent=`${Math.round(terrain.opacity)}%`;
+    $('terrain-zoom').value=C.terrainSliderFromZoom(terrain.zoom);$('terrain-zoom-value').textContent=`${Math.round(terrain.zoom)}%`;
+    $('move-terrain').textContent=editingBackground?'Done moving':'Move background';$('move-terrain').setAttribute('aria-pressed',editingBackground);$('move-terrain').classList.toggle('primary',editingBackground);
+    const paper=C.size(board);$('paper-size').value=board.paper||'a3';$('orientation').value=board.orientation||'landscape';$('board-format').textContent=`${paper.label} ${board.orientation||'landscape'} · ${paper.width} × ${paper.height} mm · editable SVG · works offline`;
+    $('map-scale').value=C.sliderFromScale(board.mapScale||100);$('map-scale-value').textContent=`${Math.round((board.mapScale||100)*10)/10}%`;$('map-scale').disabled=!board.cities.length;
+    $('element-scale').value=C.sliderFromScale(board.elementScale??100,50);$('element-scale-value').textContent=`${Math.round((board.elementScale??100)*10)/10}%`;
+    $('export').title=`Download the editable ${paper.label} map SVG`;$('print').title=`Print the ${paper.label} map or save it as PDF`;
+    const r=currentRoute(),twoCities=selectedCities.length===2&&!r,oneCity=selectedCities.length===1&&!r;
+    $('selection-controls').hidden=!r&&!selectedCities.length;
+    $('clear-selection').hidden=!r&&!selectedCities.length;
+    $('city-fields').hidden=!oneCity;
+    $('ticket-builder').hidden=!twoCities;
+    $('route-controls').hidden=!twoCities&&!r;
+    $('bend-controls').hidden=!r;
+    $('special-route-controls').hidden=!r;
+    if(r){
+      $('water-route').checked=!!r.water;$('tunnel-route').checked=!!r.tunnel;
+      $('locomotive-field').hidden=!r.water;$('tunnel-draw-field').hidden=!r.tunnel;
+      $('reset-route-badges').hidden=C.routeBadges(board,r).length===0;
+      $('locomotives').max=r.length;$('locomotives').value=r.locomotives||1;$('tunnel-draw').value=r.tunnelDraw||3;
+    }
+    if(r)trackCount=C.peers(board,r).length;
+    $('track-counts').querySelectorAll('button').forEach(b=>{const active=Number(b.dataset.count)===trackCount;b.classList.toggle('active',active);b.setAttribute('aria-pressed',active);});
+    if(r){$('bend').value=r.bend;length=r.length;color=r.color;}
+    else if(selectedCities.length===1){const c=board.cities.find(c=>c.id===selectedCities[0]);if(document.activeElement!==$('rename'))$('rename').value=c.name;}
+    $('lengths').querySelectorAll('button').forEach(b=>{const active=Number(b.dataset.length)===length;b.classList.toggle('active',active);b.setAttribute('aria-pressed',active);});
+    if(document.activeElement!==$('custom-length'))$('custom-length').value=length>6?length:'';
+    $('palette').querySelectorAll('button').forEach(b=>{b.classList.toggle('active',b.dataset.color===color);b.setAttribute('aria-pressed',b.dataset.color===color);});
+    $('city-count').textContent=board.cities.length;$('route-count').textContent=board.routes.length;
+    let html='<span class="muted">Length</span><span class="muted">Routes</span><span class="muted">Target</span>';
+    for(let i=1;i<=6;i++){const count=board.routes.filter(r=>r.length===i).length;html+=`<span>${i} train${i===1?'':'s'}</span><span class="${count===C.targets[i]?'match':''}">${count}</span><span>${C.targets[i]}</span>`;}
+    const custom=board.routes.filter(r=>r.length>6).length;if(custom)html+=`<span>Custom</span><span>${custom}</span><span>—</span>`;$('counts').innerHTML=html;
+    const pair=selectedCities.length===2?JSON.stringify([...selectedCities].sort()):null;
+    const duplicate=pair&&board.tickets.some(t=>JSON.stringify([t.from,t.to].sort())===pair);
+    $('ticket-points').disabled=!pair;$('create-ticket').disabled=!pair||!!duplicate;
+    if(pair){
+      const distance=C.shortestDistance(board,selectedCities[0],selectedCities[1]);
+      if(pair!==ticketPairKey)$('ticket-points').value=distance??1;
+      $('ticket-hint').textContent=duplicate?'A ticket for these cities already exists below.':distance===null?'No connecting route yet. Enter the points you want.':`Suggested points: ${distance}, the shortest route in trains. Adjust before creating.`;
+    }else $('ticket-hint').textContent='Select two city dots to make a ticket.';
+    ticketPairKey=pair;
+  }
+  function renderTickets(){
+    $('ticket-count').textContent=`(${board.tickets.length})`;$('tickets-empty').hidden=!!board.tickets.length;
+    $('print-tickets').disabled=!board.tickets.length;$('export-tickets').disabled=!board.tickets.length;
+    $('ticket-list').innerHTML=board.tickets.map(t=>`<article class="ticket-item">${C.ticketCard(board,t)}<div class="ticket-actions"><label>Points <input type="number" min="1" max="999999" step="1" value="${t.points}" data-ticket-points="${C.escape(t.id)}" aria-label="Ticket points"></label><button class="danger" data-remove-ticket="${C.escape(t.id)}">Remove</button></div></article>`).join('');
+  }
+  function render(){if(C.terrainState(board).type==='none')editingBackground=false;draw();controls();renderTickets();}
+  function point(event){const p=new DOMPoint(event.clientX,event.clientY);return p.matrixTransform(canvas.getScreenCTM().inverse());}
+  function chooseCity(cid){selectedRoute=null;if(selectedCities.includes(cid))selectedCities=selectedCities.filter(x=>x!==cid);else selectedCities=selectedCities.length<2?[...selectedCities,cid]:[cid];render();if(selectedCities.length===2)message('Two cities selected. Click a route color to connect them.');}
+  canvas.addEventListener('keydown',event=>{
+    if(event.key!=='Enter'&&event.key!==' ')return;
+    const cid=event.target.closest('[data-city]')?.dataset.city,rid=event.target.closest('[data-route]')?.dataset.route;
+    if(cid){event.preventDefault();chooseCity(cid);}
+    else if(rid){event.preventDefault();clearSelection();selectedRoute=rid;render();}
+  });
+  canvas.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    if(editingBackground&&C.terrainState(board).type!=='none'){
+      drag={pointer:event.pointerId,background:true,start:point(event),moved:false,before:snapshot(),terrainStart:C.terrainState(board)};
+      canvas.setPointerCapture(event.pointerId);canvas.style.cursor='grabbing';return;
+    }
+    const city=event.target.closest('[data-city]')?.dataset.city,label=event.target.closest('[data-city-label]')?.dataset.cityLabel,handle=event.target.closest('[data-handle]')?.dataset.handle,route=event.target.closest('[data-route]')?.dataset.route,special=event.target.closest('[data-special-badge]')?.dataset.specialBadge;
+    const p=point(event);
+    drag={pointer:event.pointerId,city,label,handle,route,special,start:p,last:p,moved:false,before:snapshot(),positions:city?C.copy(board.cities.find(c=>c.id===city)):null};
+    if(special)drag.badgePosition=C.routeBadges(board,board.routes.find(r=>r.id===route)).find(b=>b.kind===special);
+    if(!city&&!special&&(handle||route)){
+      const r=board.routes.find(r=>r.id===(handle||route));
+      drag.geometry=C.geometry(board,r);drag.initialBend=r.bend;
+      drag.t=handle ? 0.5 : C.nearestParameter(drag.geometry,p);
+    }
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener('pointermove',event=>{
+    if(!drag||drag.pointer!==event.pointerId)return;const p=point(event);if(Math.hypot(p.x-drag.start.x,p.y-drag.start.y)>.9)drag.moved=true;
+    if(!drag.moved)return;
+    const {width,height}=C.size(board);
+    if(drag.background){
+      board.terrain.x=drag.terrainStart.x+p.x-drag.start.x;board.terrain.y=drag.terrainStart.y+p.y-drag.start.y;paintTerrain();
+    }
+    else if(drag.special){
+      const r=board.routes.find(r=>r.id===drag.route),b=drag.badgePosition;
+      const area=C.mapArea(board),edge=.3*C.details(board);
+      const position={x:Math.max(area.left+b.width/2+edge,Math.min(area.right-b.width/2-edge,b.x+p.x-drag.start.x)),y:Math.max(area.top+b.height/2+edge,Math.min(area.bottom-b.height/2-edge,b.y+p.y-drag.start.y))};
+      C.moveRouteBadge(board,r,drag.special,position);clearSelection();selectedRoute=r.id;draw();
+    }
+    else if(drag.label){
+      const c=board.cities.find(c=>c.id===drag.label),w=Math.max(5,c.name.length*1.67)*C.details(board),anchor=c.labelAnchor||'middle';
+      const left=anchor==='middle'?w/2:anchor==='end'?w:0,right=anchor==='middle'?w/2:anchor==='start'?w:0;
+      const area=C.mapArea(board),s=C.details(board),halo=.65*s;
+      const x=Math.max(area.left+halo+left,Math.min(area.right-halo-right,c.x+drag.positions.labelDX+p.x-drag.start.x));
+      const y=Math.max(area.top+3.85*s,Math.min(area.bottom-1.45*s,c.y+drag.positions.labelDY+p.y-drag.start.y));
+      c.labelDX=x-c.x;c.labelDY=y-c.y;draw();
+    }
+    else if(drag.city){const c=board.cities.find(c=>c.id===drag.city),bounds=C.cityBounds(board);c.x=Math.max(bounds.left,Math.min(bounds.right,drag.positions.x+p.x-drag.start.x));c.y=Math.max(bounds.top,Math.min(bounds.bottom,drag.positions.y+p.y-drag.start.y));draw();}
+    else if(drag.handle||drag.route){
+      const rid=drag.handle||drag.route,r=board.routes.find(r=>r.id===rid);
+      C.bendTracks(board,r,C.draggedBend(drag.geometry,drag.initialBend,drag.start,p,drag.t));
+      clearSelection();selectedRoute=rid;draw();$('bend').value=r.bend;
+    }
+    drag.last=p;
+  });
+  function endDrag(event,cancelled=false){
+    if(!drag||drag.pointer!==event.pointerId)return;const state=drag;drag=null;if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);
+    if(cancelled){board=JSON.parse(state.before);render();return;}
+    if(state.moved){if(state.city){clearSelection();selectedCities=[state.city];}record(state.before);render();return;}
+    if(state.city)chooseCity(state.city);
+    else if(state.route){clearSelection();selectedRoute=state.route;render();message('Route selected. Edit its length, color, or curve.');}
+    else if(!state.handle){clearSelection();render();}
+  }
+  canvas.addEventListener('pointerup',event=>endDrag(event));canvas.addEventListener('pointercancel',event=>endDrag(event,true));
+  function setLength(value){
+    const valid=Number.isInteger(value)&&value>=1&&value<=999;$('length-error').hidden=valid;if(!valid)return false;
+    length=value;const r=currentRoute();if(r)edit(()=>C.setLength(board,r,value));else controls();return true;
+  }
+  for(let i=1;i<=3;i++){
+    const button=document.createElement('button');button.type='button';button.textContent=['Single','Double','Triple'][i-1];button.style.width='auto';button.style.padding='8px';button.dataset.count=i;button.setAttribute('aria-label',`${i} parallel track${i===1?'':'s'}`);
+    button.onclick=()=>{trackCount=i;const r=currentRoute();if(r){try{edit(()=>C.setTrackCount(board,r,i,()=>id('track')));message(`Connection now has ${i} track${i===1?'':'s'}. Undo is available.`);}catch(error){message(error.message,true);}}else controls();};
+    $('track-counts').append(button);
+  }
+  for(let i=1;i<=6;i++){const button=document.createElement('button');button.type='button';button.textContent=i;button.dataset.length=i;button.setAttribute('aria-label',`${i} trains`);button.onclick=()=>{$('custom-length').value='';setLength(i);};$('lengths').append(button);}
+  $('custom-length').addEventListener('input',()=>{$('length-error').hidden=!$('custom-length').value||Number.isInteger(Number($('custom-length').value))&&Number($('custom-length').value)>=1&&Number($('custom-length').value)<=999;});
+  $('custom-length').addEventListener('change',()=>{if($('custom-length').value)setLength(Number($('custom-length').value));});
+  for(const [key,hex]of Object.entries(C.palette)){
+    const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=key;button.style.setProperty('--color',hex);button.setAttribute('aria-label',`${key} route`);button.innerHTML=`<span aria-hidden="true"></span>${key[0].toUpperCase()+key.slice(1)}`;
+    button.onclick=()=>{
+      const custom=$('custom-length').value;if(custom&&!setLength(Number(custom)))return;
+      color=key;const r=currentRoute();
+      if(r){edit(()=>r.color=key);message(`Route changed to ${key}.`);}
+      else if(selectedCities.length===2){const [from,to]=selectedCities;
+        const probe={from,to},existing=C.peers(board,probe);
+        if(existing.length){
+          const beforeIds=new Set(existing.map(r=>r.id));
+          try{edit(()=>{C.setTrackCount(board,existing[0],trackCount,()=>id('track'));C.setLength(board,existing[0],length);for(const p of C.peers(board,existing[0]))if(!beforeIds.has(p.id))p.color=key;clearSelection();selectedRoute=existing[0].id;});message(`Connection now has ${trackCount} track${trackCount===1?'':'s'}. Click an individual track to edit its color.`);}catch(error){message(error.message,true);}
+          return;
+        }
+        if(board.routes.length+trackCount>1000){message('Maximum of 1,000 routes reached.',true);return;}
+        const a=board.cities.find(c=>c.id===from),b=board.cities.find(c=>c.id===to);
+        if(Math.hypot(a.x-b.x,a.y-b.y)<8){message('Move those cities farther apart before connecting them.',true);return;}
+        const route={id:id('track'),from,to,color:key,length,bend:0};edit(()=>{board.routes.push(route);C.setTrackCount(board,route,trackCount,()=>id('track'));clearSelection();selectedRoute=route.id;});message(`Added ${trackCount} ${key} track${trackCount===1?'':'s'}, ${length} train${length===1?'':'s'} each. Click a track to recolor it.`);
+      }else{controls();message('Select two cities first, then click a color to draw the route.');}
+    };$('palette').append(button);
+  }
+  $('add-city-form').addEventListener('submit',event=>{
+    event.preventDefault();const name=$('city-name').value.trim();if(!name)return;
+    if(board.cities.some(c=>c.name.toLowerCase()===name.toLowerCase())){message('A city with that name already exists.',true);return;}
+    if(board.cities.length>=200){message('Maximum of 200 cities reached.',true);return;}
+    // Deterministic open-position search avoids piling new cities on one point.
+    const bounds=C.cityBounds(board),center={x:(bounds.left+bounds.right)/2,y:(bounds.top+bounds.bottom)/2};
+    let best={...center},score=-Infinity;
+    for(let row=0;row<7;row++)for(let col=0;col<11;col++){
+      const p={x:bounds.left+6+col*(bounds.right-bounds.left-12)/10,y:bounds.top+6+row*(bounds.bottom-bounds.top-12)/6};
+      const clearance=board.cities.length?Math.min(...board.cities.map(c=>Math.hypot(c.x-p.x,c.y-p.y))):300;
+      const s=clearance-Math.hypot(p.x-center.x,p.y-center.y)*.15;if(s>score){score=s;best=p;}
+    }
+    const city={id:id('city'),name,x:best.x,y:best.y};edit(()=>{board.cities.push(city);C.pinLabels(board);clearSelection();selectedCities=[city.id];});$('city-name').value='';$('city-name').focus();message(`Added ${name}. Drag the dot to move the city, or drag its name to reposition the label.`);
+  });
+  $('rename').addEventListener('change',()=>{
+    const c=board.cities.find(c=>c.id===selectedCities[0]),name=$('rename').value.trim();if(!c)return;
+    if(!name||board.cities.some(other=>other!==c&&other.name.toLowerCase()===name.toLowerCase())){message('Enter a unique, non-empty city name.',true);$('rename').value=c.name;return;}
+    edit(()=>c.name=name);message('City renamed.');
+  });
+  $('auto-label').onclick=()=>{const c=board.cities.find(c=>c.id===selectedCities[0]);if(!c)return;edit(()=>{delete c.labelDX;delete c.labelDY;delete c.labelAnchor;C.pinLabels(board);});message('Label auto-placed. Its new offset will stay with the city.');};
+  $('create-ticket').onclick=()=>{
+    if(selectedCities.length!==2)return;
+    const [from,to]=selectedCities,points=Number($('ticket-points').value);
+    if(!Number.isInteger(points)||points<1||points>999999){message('Ticket points must be a whole number from 1 to 999999.',true);return;}
+    if(board.tickets.length>=1000){message('Maximum of 1,000 tickets reached.',true);return;}
+    if(board.tickets.some(t=>(t.from===from&&t.to===to)||(t.from===to&&t.to===from))){message('A ticket for those cities already exists.',true);return;}
+    edit(()=>board.tickets.push({id:id('ticket'),from,to,points}));message('Ticket added to the list below the map. You can edit its points or remove it there.');
+  };
+  $('ticket-list').addEventListener('click',event=>{
+    const ticketId=event.target.closest('[data-remove-ticket]')?.dataset.removeTicket;if(!ticketId)return;
+    edit(()=>board.tickets=board.tickets.filter(t=>t.id!==ticketId));message('Ticket removed. Undo is available.');
+  });
+  $('ticket-list').addEventListener('change',event=>{
+    const ticketId=event.target.dataset.ticketPoints,t=board.tickets.find(t=>t.id===ticketId);if(!t)return;
+    const points=Number(event.target.value);if(!Number.isInteger(points)||points<1||points>999999){event.target.value=t.points;message('Ticket points must be a whole number from 1 to 999999.',true);return;}
+    edit(()=>t.points=points);message('Ticket points updated.');
+  });
+  function deleteCity(){const cid=selectedCities[0];if(!cid)return;edit(()=>{board.cities=board.cities.filter(c=>c.id!==cid);board.routes=board.routes.filter(r=>r.from!==cid&&r.to!==cid);board.tickets=board.tickets.filter(t=>t.from!==cid&&t.to!==cid);clearSelection();});message('City, its routes, and its tickets deleted. Undo is available.');}
+  function deleteRoute(){if(!selectedRoute)return;edit(()=>{board.routes=board.routes.filter(r=>r.id!==selectedRoute);clearSelection();});message('Route deleted. Undo is available.');}
+  $('delete-city').onclick=deleteCity;$('delete-route').onclick=deleteRoute;
+  $('clear-selection').onclick=()=>{clearSelection();render();message('Selection cleared.');};
+  $('bend').addEventListener('input',()=>{const r=currentRoute();if(!r)return;if(!curveBefore)curveBefore=snapshot();C.bendTracks(board,r,Number($('bend').value));draw();});
+  $('bend').addEventListener('change',()=>{if(curveBefore){record(curveBefore);curveBefore=null;render();}});
+  $('straighten').onclick=()=>{const r=currentRoute();if(r)edit(()=>C.bendTracks(board,r,0));};
+  $('water-route').onchange=()=>{const r=currentRoute();if(!r)return;edit(()=>{r.water=$('water-route').checked;if(r.water)r.locomotives=Math.min(r.length,Math.max(1,r.locomotives||1));});};
+  $('tunnel-route').onchange=()=>{const r=currentRoute();if(!r)return;edit(()=>{r.tunnel=$('tunnel-route').checked;if(r.tunnel)r.tunnelDraw=r.tunnelDraw||3;});};
+  $('reset-route-badges').onclick=()=>{const r=currentRoute();if(r)edit(()=>delete r.badgeOffsets);};
+  $('locomotives').onchange=()=>{
+    const r=currentRoute();if(!r)return;const value=Number($('locomotives').value);
+    if(!Number.isInteger(value)||value<1||value>r.length){$('locomotives').value=r.locomotives||1;message(`Required locomotives must be between 1 and ${r.length}.`,true);return;}
+    edit(()=>r.locomotives=value);
+  };
+  $('tunnel-draw').onchange=()=>{
+    const r=currentRoute();if(!r)return;const value=Number($('tunnel-draw').value);
+    if(!Number.isInteger(value)||value<1||value>99){$('tunnel-draw').value=r.tunnelDraw||3;message('Tunnel cards to draw must be between 1 and 99.',true);return;}
+    edit(()=>r.tunnelDraw=value);
+  };
+  $('board-title').addEventListener('change',()=>edit(()=>board.title=$('board-title').value.trim()||'MY TRAIN MAP'));
+  $('show-title').onchange=()=>edit(()=>{board.showTitle=$('show-title').checked;if(board.showTitle)for(const c of board.cities)c.y=Math.max(C.cityBounds(board).top,c.y);});
+  $('trackers').onchange=()=>edit(()=>{board.trackers=$('trackers').checked;if(board.trackers)for(const c of board.cities)c.y=Math.max(C.cityBounds(board).top,c.y);});
+  $('scoring').onchange=()=>edit(()=>board.scoring=$('scoring').checked);
+  $('map-only').onclick=()=>{edit(()=>{board.trackers=false;board.scoring=false;board.showTitle=false;});message('Map heading and counters hidden. Print tracking for a separate Letter sheet.');};
+  $('paper-size').onchange=()=>edit(()=>C.resizeBoard(board,$('paper-size').value));
+  $('orientation').onchange=()=>edit(()=>C.resizeBoard(board,board.paper||'a3',$('orientation').value));
+  function parseBackgroundSvg(source,name){
+    if(/<!DOCTYPE|<!ENTITY/i.test(source))throw Error('Please use an SVG without document types or entity declarations.');
+    const doc=new DOMParser().parseFromString(source,'image/svg+xml'),root=doc.documentElement;
+    if(doc.querySelector('parsererror')||root.localName!=='svg'||root.namespaceURI!=='http://www.w3.org/2000/svg')throw Error('This file is not a valid SVG.');
+    const unitValue=value=>{const m=String(value||'').trim().match(/^([\d.eE+-]+)\s*(px|mm|cm|in|pt|pc)?$/);return m?Number(m[1])*({px:1,mm:96/25.4,cm:96/2.54,in:96,pt:96/72,pc:16}[m[2]||'px']):NaN;};
+    const box=root.hasAttribute('viewBox')?root.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number):[0,0,unitValue(root.getAttribute('width')),unitValue(root.getAttribute('height'))];
+    if(box.length!==4)throw Error('The SVG needs a valid viewBox or width and height.');
+    function convert(element){
+      const attrs=Object.fromEntries([...element.attributes].map(a=>[a.name,a.value]));
+      for(let i=0;i<element.style?.length;i++){const key=element.style.item(i);attrs[key]=element.style.getPropertyValue(key);}
+      const children=[];
+      for(const child of element.childNodes){
+        if(child.nodeType===1)children.push(convert(child));
+        else if(child.nodeType===3&&['text','tspan','title','desc'].includes(element.localName))children.push({tag:'tspan',attrs:{},text:child.nodeValue});
+      }
+      // Preserve root paint/transform attributes while dimensions come from the viewBox.
+      if(element===root){for(const key of ['width','height','x','y','viewBox','preserveAspectRatio'])delete attrs[key];}
+      return {tag:element===root?'g':element.localName,attrs,children};
+    }
+    return C.cleanSvgAsset({name,x:box[0],y:box[1],width:box[2],height:box[3],nodes:[convert(root)]});
+  }
+  $('upload-terrain').onclick=()=>$('terrain-file').click();
+  $('terrain-file').onchange=async()=>{
+    const file=$('terrain-file').files[0];if(!file)return;
+    try{
+      if(file.size>2_000_000)throw Error('Background SVG must be smaller than 2 MB.');
+      const asset=parseBackgroundSvg(await file.text(),file.name);
+      edit(()=>{board.terrain={...C.terrainState(board),type:'uploaded',asset,zoom:100,x:0,y:0};editingBackground=false;});
+      if(!saveFailure)message(`Added ${file.name}. Save the project to keep its background.`);
+    }catch(error){message(`Could not add background: ${error.message}`,true);}finally{$('terrain-file').value='';}
+  };
+  $('remove-terrain').onclick=()=>edit(()=>{board.terrain={...C.terrainState(board),type:'none'};delete board.terrain.asset;editingBackground=false;});
+  $('terrain-type').onchange=()=>edit(()=>{board.terrain={...C.terrainState(board),type:$('terrain-type').value};editingBackground=false;});
+  $('move-terrain').onclick=()=>{editingBackground=!editingBackground;clearSelection();render();};
+  $('reset-terrain').onclick=()=>edit(()=>{board.terrain={...C.terrainState(board),x:0,y:0,zoom:100};});
+  for(const [control,property]of [['terrain-opacity','opacity'],['terrain-zoom','zoom']]){
+    $(control).addEventListener('input',()=>{
+      if(!terrainBefore)terrainBefore=snapshot();
+      board.terrain={...C.terrainState(board),[property]:property==='zoom'?C.terrainZoomFromSlider(Number($(control).value)):Number($(control).value)};
+      $(control+'-value').textContent=`${Math.round(board.terrain[property])}%`;paintTerrain();
+    });
+    $(control).addEventListener('change',()=>{if(terrainBefore){record(terrainBefore);terrainBefore=null;render();}});
+  }
+  $('map-scale').addEventListener('input',()=>{
+    if(!scaleBefore){scaleBefore=snapshot();scaleSource=C.copy(board);}
+    const actual=C.scaleMap(board,C.scaleFromSlider(Number($('map-scale').value)),scaleSource);
+    $('map-scale').value=C.sliderFromScale(actual);$('map-scale-value').textContent=`${Math.round(actual*10)/10}%`;draw();
+  });
+  $('map-scale').addEventListener('change',()=>{if(scaleBefore){record(scaleBefore);scaleBefore=null;scaleSource=null;render();}});
+  $('element-scale').addEventListener('input',()=>{
+    if(!elementBefore)elementBefore=snapshot();
+    board.elementScale=Math.round(C.scaleFromSlider(Number($('element-scale').value),50)*10)/10;
+    $('element-scale-value').textContent=`${board.elementScale}%`;draw();
+  });
+  $('element-scale').addEventListener('change',()=>{if(elementBefore){record(elementBefore);elementBefore=null;render();}});
+  $('map-background').addEventListener('input',()=>{if(!backgroundBefore)backgroundBefore=snapshot();board.background=$('map-background').value;draw();});
+  $('map-background').addEventListener('change',()=>{if(backgroundBefore){record(backgroundBefore);backgroundBefore=null;render();}else edit(()=>board.background=$('map-background').value);});
+  document.querySelectorAll('[data-background]').forEach(button=>button.onclick=()=>edit(()=>board.background=button.dataset.background));
+  function history(isRedo){const source=isRedo?redo:undo,target=isRedo?undo:redo;if(!source.length)return;target.push(snapshot());board=JSON.parse(source.pop());clearSelection();persist();render();message(isRedo?'Edit restored.':'Edit undone.');}
+  $('undo').onclick=()=>history(false);$('redo').onclick=()=>history(true);
+  document.addEventListener('keydown',event=>{
+    if($('scoreboard-dialog').open)return;
+    if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))return;
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();history(event.shiftKey);}
+    else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='y'){event.preventDefault();history(true);}
+    else if(event.key==='Escape'){editingBackground=false;clearSelection();render();}
+    else if(event.key==='Delete'||event.key==='Backspace'){if(selectedRoute){event.preventDefault();deleteRoute();}else if(selectedCities.length===1){event.preventDefault();deleteCity();}}
+  });
+  function download(text,type,name){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+  const filename=()=>board.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'train-board';
+  $('save').onclick=()=>{download(JSON.stringify(board,null,2),'application/json',filename()+'.json');message('Project saved. Use Open project to continue editing it later.');};
+  $('export').onclick=()=>{download(C.svg(board),'image/svg+xml',filename()+'.svg');message(`${C.size(board).label} SVG downloaded. Print at actual size in ${board.orientation||'landscape'}.`);};
+  function preparePrint(kind){
+    document.body.dataset.print=kind;$('page-format').textContent=kind==='tickets'||kind==='tracking'?'@page{size:letter portrait;margin:0}':C.mapPrintCSS(board);
+    $('print-board').innerHTML=kind==='tracking'?C.trackingSheet(board):kind==='tickets'?C.ticketSheets(board).map(sheet=>`<section class="ticket-sheet">${sheet}</section>`).join(''):C.svg(board).replace(/<\?xml[^>]*>/,'');
+  }
+  $('print').onclick=()=>{preparePrint('board');window.print();};
+  $('print-tracking').onclick=()=>{preparePrint('tracking');window.print();};
+  $('export-tracking').onclick=()=>{download(C.trackingHTML(board),'text/html',filename()+'-tracking-letter.html');message('Letter tracking sheet exported. Open it to print or Save as PDF at 100%.');};
+  $('view-scoreboard').onclick=()=>{
+    const preview=$('scoreboard-preview');
+    if(!preview.hasAttribute('src'))preview.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(C.trackingSheet(board));
+    $('scoreboard-dialog').showModal();
+  };
+  $('preview-print-tracking').onclick=$('print-tracking').onclick;
+  $('preview-export-tracking').onclick=$('export-tracking').onclick;
+  $('print-tickets').onclick=()=>{if(!board.tickets.length)return;preparePrint('tickets');window.print();};
+  $('export-tickets').onclick=()=>{if(!board.tickets.length)return;download(C.ticketHTML(board),'text/html',filename()+'-tickets-letter.html');message('Letter ticket sheets exported. Open the HTML file to print or Save as PDF at 100%.');};
+  window.addEventListener('beforeprint',()=>{if(!document.body.dataset.print)preparePrint($('scoreboard-dialog').open?'tracking':'board');});
+  window.addEventListener('afterprint',()=>{delete document.body.dataset.print;$('page-format').textContent=C.mapPrintCSS(board);});
+  $('open').onclick=()=>$('file').click();
+  $('file').addEventListener('change',async()=>{
+    const file=$('file').files[0];if(!file)return;
+    try{if(file.size>12_000_000)throw Error('Project file must be smaller than 12 MB.');const loaded=C.validate(JSON.parse(await file.text()));C.pinLabels(loaded);edit(()=>{board=loaded;clearSelection();});message(`Opened ${file.name}. Undo returns to your previous board.`);}catch(error){message(`Could not open project: ${error.message}`,true);}finally{$('file').value='';}
+  });
+  $('new').onclick=()=>{if((board.cities.length||board.routes.length)&&!window.confirm('Start a new empty board? You can undo this, or save the current project first.'))return;edit(()=>{board=C.empty();clearSelection();});message('Empty board ready. Add your first city.');};
+  try{const saved=localStorage.getItem(storageKey);if(saved){board=C.validate(JSON.parse(saved));message('Restored your last board from this browser.');}}catch{message('Starting an empty board. Browser storage may be unavailable; use Save project.');}
+  C.pinLabels(board);render();
+})();
+</script>
+</body>
+</html>
