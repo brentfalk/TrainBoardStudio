@@ -9,7 +9,7 @@ Design printable train route boards with a self-contained browser editor. Open [
 3. Select two cities and click **Create Ticket** to add a destination ticket. Edit its points or remove it in the list below the map.
 4. Use **Board setup** to choose Letter, 11 × 17, or A3 in portrait or landscape, adjust the map and element sizes, or upload an SVG background. **Use full map canvas** hides the heading, train counters, and route scoring reference.
 
-Use **Save** to download your project as JSON and **Open** to resume it. The JSON includes any uploaded background. The editor also restores your last board when browser storage is available.
+Use **Browser projects** to save and reopen named projects in the current browser. The editor also restores the last working board when browser storage is available. Use **Export JSON** for a portable backup and **Open JSON** to reopen it. Both save formats include any uploaded background.
 
 ## Print and export
 

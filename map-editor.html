@@ -68,6 +68,13 @@ nav .title-field input{flex:none;width:100%;height:34px;padding:0 10px;border-ra
 .scoreboard-header h2{margin:0;font-size:17px}
 .scoreboard-actions{display:flex;gap:6px;flex-wrap:wrap}
 #scoreboard-preview{display:block;width:100%;margin:auto}
+#browser-projects-dialog{width:min(92vw,460px);max-height:90vh;padding:16px;border:1px solid #425b6c;border-radius:12px;background:#15222d;color:#e3edf4}
+#browser-projects-dialog::backdrop{background:#071016b8}
+#browser-projects-dialog h2{margin:0 0 12px;font-size:18px}
+#browser-projects-dialog p{font-size:13px}
+#browser-projects-dialog .field{margin:12px 0}
+#browser-projects-dialog select{width:100%;padding:8px}
+.browser-project-actions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .swatch:is([data-color="white"],[data-color="gray"]) span{background:var(--track-fill);box-shadow:inset 0 0 0 2px var(--color)}
 </style>
 </head>
@@ -76,7 +83,7 @@ nav .title-field input{flex:none;width:100%;height:34px;padding:0 10px;border-ra
 <nav aria-label="Board actions">
   <div class="toolbar-group" role="group" aria-label="Edit history"><div class="toolbar-buttons"><button id="undo" disabled title="Undo (Ctrl+Z)">Undo</button><button id="redo" disabled title="Redo (Ctrl+Shift+Z)">Redo</button></div></div>
   <span class="title-field"><label class="sr-only" for="board-title">Board title</label><input id="board-title" value="MY TRAIN MAP" maxlength="65"></span>
-  <div class="toolbar-group" role="group" aria-label="Project files"><div class="toolbar-buttons"><button id="open" title="Open a saved JSON project">Open</button><button id="save" title="Save project as JSON">Save</button></div></div><input id="file" type="file" accept=".json,application/json" hidden>
+  <div class="toolbar-group" role="group" aria-label="Projects"><div class="toolbar-buttons"><button id="browser-projects" aria-haspopup="dialog" aria-controls="browser-projects-dialog">Browser projects</button><button id="open" title="Open a saved JSON project">Open JSON</button><button id="save" title="Save project as JSON">Export JSON</button></div></div><input id="file" type="file" accept=".json,application/json" hidden>
   <div class="toolbar-group" role="group" aria-label="Map exports"><div class="toolbar-buttons"><button id="export" title="Download the editable A3 map SVG">Export SVG</button><button id="print" title="Print the A3 map or save it as PDF">Print map</button></div></div>
   <div class="toolbar-group" role="group" aria-label="Ticket exports"><div class="toolbar-buttons"><button id="export-tickets" disabled title="Export printable Letter ticket sheets">Export tickets</button><button id="print-tickets" disabled title="Print Letter ticket sheets or save them as PDF">Print tickets</button></div></div>
   <div class="toolbar-group" role="group" aria-label="Tracking sheet"><div class="toolbar-buttons"><button id="view-scoreboard" aria-haspopup="dialog" aria-controls="scoreboard-dialog">View scoreboard</button><button id="export-tracking" title="Export a standalone Letter train and score tracking sheet">Export tracking</button><button id="print-tracking" title="Print a Letter train and score tracking sheet">Print tracking</button></div></div>
@@ -145,6 +152,21 @@ nav .title-field input{flex:none;width:100%;height:34px;padding:0 10px;border-ra
 </section>
 </aside>
 </main>
+<dialog id="browser-projects-dialog" aria-labelledby="browser-projects-heading">
+  <h2 id="browser-projects-heading">Browser projects</h2>
+  <p>These saves stay in this browser. Export JSON for a portable backup.</p>
+  <form id="browser-save-form">
+    <label class="field">Project name<input id="browser-project-name" maxlength="65" required></label>
+    <button type="submit" class="primary">Save to browser</button>
+  </form>
+  <label class="field">Saved projects<select id="browser-project-list"></select></label>
+  <div class="browser-project-actions">
+    <button id="browser-project-open" type="button">Open project</button>
+    <button id="browser-project-delete" type="button" class="danger">Delete saved copy</button>
+    <form method="dialog"><button>Close</button></form>
+  </div>
+  <p id="browser-project-status" role="status" hidden></p>
+</dialog>
 <dialog id="scoreboard-dialog" aria-labelledby="scoreboard-heading">
   <form class="scoreboard-header" method="dialog">
     <h2 id="scoreboard-heading">Scoreboard</h2>
@@ -696,6 +718,7 @@ const BoardCore = (() => {
 (() => {
   'use strict';
   const C=BoardCore,$=id=>document.getElementById(id),canvas=$('canvas'),storageKey='train-board-studio-v1';
+  const browserProjectsKey='train-board-studio-projects-v1';
   let board=C.empty(),selectedCities=[],selectedRoute=null,length=2,color='blue',trackCount=1,drag=null,undo=[],redo=[],serial=0,curveBefore=null,backgroundBefore=null,scaleBefore=null,scaleSource=null,elementBefore=null,terrainBefore=null,editingBackground=false,ticketPairKey=null;
   const snapshot=()=>JSON.stringify(board);
   const id=prefix=>`${prefix}-${Date.now().toString(36)}-${(++serial).toString(36)}`;
@@ -1005,7 +1028,7 @@ const BoardCore = (() => {
   function history(isRedo){const source=isRedo?redo:undo,target=isRedo?undo:redo;if(!source.length)return;target.push(snapshot());board=JSON.parse(source.pop());clearSelection();persist();render();message(isRedo?'Edit restored.':'Edit undone.');}
   $('undo').onclick=()=>history(false);$('redo').onclick=()=>history(true);
   document.addEventListener('keydown',event=>{
-    if($('scoreboard-dialog').open)return;
+    if($('scoreboard-dialog').open||$('browser-projects-dialog').open)return;
     if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))return;
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();history(event.shiftKey);}
     else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='y'){event.preventDefault();history(true);}
@@ -1015,6 +1038,70 @@ const BoardCore = (() => {
   function download(text,type,name){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
   const filename=()=>board.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'train-board';
   $('save').onclick=()=>{download(JSON.stringify(board,null,2),'application/json',filename()+'.json');message('Project saved. Use Open project to continue editing it later.');};
+  const browserProjectDialog=$('browser-projects-dialog');
+  const browserProjectList=$('browser-project-list');
+  const browserProjectName=$('browser-project-name');
+  function readBrowserProjects(){
+    const projects=JSON.parse(localStorage.getItem(browserProjectsKey)??'[]');
+    if(!Array.isArray(projects)||projects.some(project=>!project||typeof project.name!=='string'||!project.board))throw Error('Invalid saved project list.');
+    return projects;
+  }
+  function browserProjectMessage(value,error=false){
+    const status=$('browser-project-status');
+    status.textContent=value;status.hidden=!value;status.classList.toggle('error',error);
+  }
+  function showBrowserProjects(projects,selected=''){
+    browserProjectList.replaceChildren();
+    if(!projects.length)browserProjectList.add(new Option('No saved projects',''));
+    for(const project of projects)browserProjectList.add(new Option(project.name,project.name));
+    if(projects.some(project=>project.name===selected))browserProjectList.value=selected;
+    browserProjectList.disabled=!projects.length;
+    $('browser-project-open').disabled=!projects.length;
+    $('browser-project-delete').disabled=!projects.length;
+  }
+  $('browser-projects').onclick=()=>{
+    browserProjectName.value=board.title;
+    browserProjectMessage('');
+    try{showBrowserProjects(readBrowserProjects());}
+    catch{showBrowserProjects([]);browserProjectMessage('Browser saves could not be read. Export JSON to keep a copy.',true);}
+    browserProjectDialog.showModal();
+  };
+  $('browser-save-form').onsubmit=event=>{
+    event.preventDefault();
+    const name=browserProjectName.value.trim();
+    if(!name){browserProjectMessage('Enter a project name.',true);return;}
+    try{
+      const projects=readBrowserProjects();
+      const index=projects.findIndex(project=>project.name.toLowerCase()===name.toLowerCase());
+      if(index>=0&&!window.confirm(`Replace the saved copy of “${projects[index].name}”?`))return;
+      const entry={name,board};
+      if(index>=0)projects[index]=entry;
+      else projects.push(entry);
+      localStorage.setItem(browserProjectsKey,JSON.stringify(projects));
+      showBrowserProjects(projects,name);
+      browserProjectMessage(`Saved “${name}” in this browser.`);
+    }catch{browserProjectMessage('Could not save to browser storage. It may be full or unavailable. Export JSON to keep a copy.',true);}
+  };
+  $('browser-project-open').onclick=()=>{
+    try{
+      const project=readBrowserProjects().find(entry=>entry.name===browserProjectList.value);
+      if(!project)throw Error('The saved copy is missing.');
+      const loaded=C.validate(project.board);C.pinLabels(loaded);
+      edit(()=>{board=loaded;clearSelection();});
+      browserProjectDialog.close();
+      if(!saveFailure)message(`Opened “${project.name}”. Undo returns to your previous board.`);
+    }catch(error){browserProjectMessage(`Could not open project. ${error.message}`,true);}
+  };
+  $('browser-project-delete').onclick=()=>{
+    const name=browserProjectList.value;
+    if(!name||!window.confirm(`Delete the browser copy of “${name}”?`))return;
+    try{
+      const projects=readBrowserProjects().filter(project=>project.name!==name);
+      localStorage.setItem(browserProjectsKey,JSON.stringify(projects));
+      showBrowserProjects(projects);
+      browserProjectMessage(`Deleted “${name}” from browser storage.`);
+    }catch{browserProjectMessage('Could not delete the saved copy.',true);}
+  };
   $('export').onclick=()=>{download(C.svg(board),'image/svg+xml',filename()+'.svg');message(`${C.size(board).label} SVG downloaded. Print at actual size in ${board.orientation||'landscape'}.`);};
   function preparePrint(kind){
     document.body.dataset.print=kind;$('page-format').textContent=kind==='tickets'||kind==='tracking'?'@page{size:letter portrait;margin:0}':C.mapPrintCSS(board);
