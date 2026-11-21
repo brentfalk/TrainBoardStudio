@@ -222,6 +222,12 @@ const BoardCore = (() => {
     return `<defs><clipPath id="terrain-paper-clip"><rect width="${p.width}" height="${p.height}"/></clipPath></defs><g id="terrain-background" clip-path="url(#terrain-paper-clip)" opacity="${state.opacity/100}" pointer-events="none"><g transform="translate(${t.x} ${t.y}) scale(${t.scale}) translate(${-t.sourceX} ${-t.sourceY})">${svgAssetMarkup(state.asset)}</g></g>`;
   }
   const details=board=>(board.elementScale??100)/100;
+  const cityNameLines=name=>name.split(/\\n|\r\n?|\n/).map(line=>line.trim()).filter(Boolean);
+  const cityNameText=name=>cityNameLines(name).join(' ');
+  function cityLabelMetrics(name,scale){
+    const lines=cityNameLines(name),lineHeight=4*scale;
+    return {lines,lineHeight,width:Math.max(5,...lines.map(line=>line.length*1.67))*scale,height:Math.max(1,lines.length)*lineHeight};
+  }
   const trackerTop=board=>board.showTitle!==false?19:6;
   function mapArea(board,paper=size(board)){
     return {left:.5,right:paper.width-.5,top:board.trackers?trackerTop(board)+4*6.4+4.8+.5:board.showTitle!==false?16:6,bottom:board.scoring?paper.height-11:paper.height-.5};
@@ -298,7 +304,7 @@ const BoardCore = (() => {
     }
     const ids=new Set(),routeIds=new Set();
     for(const c of input.cities){
-      if(!c||typeof c.id!=='string'||!c.id||c.id.length>100||ids.has(c.id)||typeof c.name!=='string'||!c.name.trim()||!Number.isFinite(c.x)||!Number.isFinite(c.y))throw Error('A city is missing a unique ID, a name, or valid coordinates.');
+      if(!c||typeof c.id!=='string'||!c.id||c.id.length>100||ids.has(c.id)||typeof c.name!=='string'||!cityNameText(c.name.trim().slice(0,60))||!Number.isFinite(c.x)||!Number.isFinite(c.y))throw Error('A city is missing a unique ID, a name, or valid coordinates.');
       if(Math.abs(c.x)>100*(width+height)||Math.abs(c.y)>100*(width+height))throw Error('City position is outside the supported coordinate range.');
       const city={id:c.id,name:c.name.trim().slice(0,60),x:c.x,y:c.y};
       if(c.labelDX!==undefined||c.labelDY!==undefined||c.labelAnchor!==undefined){
@@ -479,20 +485,20 @@ const BoardCore = (() => {
       if(!numbered.has(key)){numbered.add(key);numbers.push(countBadge(board,r,g));}
     }
     for(const c of board.cities){
-      const w=Math.max(5,c.name.length*1.67)*s,candidates=[];
+      const {width:w,height:h,lineHeight}=cityLabelMetrics(c.name,s),candidates=[];
       if(Number.isFinite(c.labelDX)&&Number.isFinite(c.labelDY)){
         const x=c.x+c.labelDX,y=c.y+c.labelDY,anchor=c.labelAnchor||'middle';
-        labels.push({id:c.id,x,y,anchor,box:{x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h:4*s}});
+        labels.push({id:c.id,x,y,anchor,box:{x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h}});
         continue;
       }
-      for(const gap of [6,9,12].map(v=>v*s))candidates.push([0,-gap,'middle'],[0,gap+3*s,'middle'],[gap,s,'start'],[-gap,s,'end'],[gap,-gap/2,'start'],[-gap,-gap/2,'end'],[gap,gap/2+2*s,'start'],[-gap,gap/2+2*s,'end']);
+      for(const gap of [6,9,12].map(v=>v*s))candidates.push([0,-gap-(h-lineHeight),'middle'],[0,gap+3*s,'middle'],[gap,s,'start'],[-gap,s,'end'],[gap,-gap/2,'start'],[-gap,-gap/2,'end'],[gap,gap/2+2*s,'start'],[-gap,gap/2+2*s,'end']);
       let best;
       for(const [dx,dy,anchor]of candidates){
-        const x=c.x+dx,y=c.y+dy,box={x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h:4*s};
+        const x=c.x+dx,y=c.y+dy,box={x:x-(anchor==='middle'?w/2:anchor==='end'?w:0),y:y-3.2*s,w,h};
         let score=Math.hypot(dx,dy)*.1;
         score+=trackHits(box,2.8*s)*5;
         score+=board.cities.filter(p=>p.id!==c.id&&rectHit(p.x,p.y,box,4*s)).length*250;
-        score+=labels.filter(p=>box.x<p.box.x+p.box.w+1&&box.x+w>p.box.x-1&&box.y<p.box.y+5&&box.y+4>p.box.y).length*250;
+        score+=labels.filter(p=>box.x<p.box.x+p.box.w+1&&box.x+w>p.box.x-1&&box.y<p.box.y+p.box.h+1&&box.y+h>p.box.y).length*250;
         score+=numbers.filter(p=>rectHit(p.x,p.y,box,p.radius+.8)).length*250;
         const area=mapArea(board),halo=.65*s;
         if(box.x<area.left+halo||box.x+w>area.right-halo||box.y<area.top+halo||box.y+box.h>area.bottom-halo)score+=10000;
@@ -535,7 +541,7 @@ const BoardCore = (() => {
     const orderedTracks=[...tracks.filter(({r})=>!badgeTracks.has(r.id)),...tracks.filter(({r})=>badgeTracks.has(r.id))];
     for(const {r,g}of orderedTracks){
       const n=badgeTracks.get(r.id);
-      s+=`<g id="route-${e(r.id)}" ${editable?`data-route="${e(r.id)}" tabindex="0" role="button" aria-label="Edit route: ${e(g.a.name)} to ${e(g.b.name)}, ${r.length} trains"`:''} data-from="${e(r.from)}" data-to="${e(r.to)}" data-length="${r.length}" data-color="${r.color}"><title>${e(g.a.name)} – ${e(g.b.name)}: ${r.length} trains, ${r.color}</title>`;
+      s+=`<g id="route-${e(r.id)}" ${editable?`data-route="${e(r.id)}" tabindex="0" role="button" aria-label="Edit route: ${e(cityNameText(g.a.name))} to ${e(cityNameText(g.b.name))}, ${r.length} trains"`:''} data-from="${e(r.from)}" data-to="${e(r.to)}" data-length="${r.length}" data-color="${r.color}"><title>${e(cityNameText(g.a.name))} – ${e(cityNameText(g.b.name))}: ${r.length} trains, ${r.color}</title>`;
       if(editable)s+=`<path d="${g.d}" stroke="transparent" stroke-width="9" pointer-events="stroke"/>`;
       s+=`<path id="route-${e(r.id)}-outline" d="${g.d}" stroke="${palette[r.color]}" stroke-width="${(3*element).toFixed(1)}"/>`;
       if(n)s+=countShape(n,n.radius+.3*element,palette[n.color],'count-outline');
@@ -545,8 +551,16 @@ const BoardCore = (() => {
       s+='</g>';
     }s+='</g><g id="route-length-labels">';
     for(const n of numbers)s+=badgeMarkup(board,n,editable);s+='</g>'+specialBadgesMarkup(board,editable)+`<g id="cities" fill="white" stroke="#20242a" stroke-width="${.65*element}">`;
-    for(const c of board.cities)s+=`<g ${editable?`data-city="${e(c.id)}" tabindex="0" role="button" aria-label="Select city: ${e(c.name)}"`:''}><title>${e(c.name)}</title>${editable?`<circle cx="${c.x}" cy="${c.y}" r="5" fill="transparent" stroke="none"/>`:''}<circle id="city-${e(c.id)}" cx="${c.x}" cy="${c.y}" r="${2.4*element}"/></g>`;
-    s+='</g><g id="city-labels">';for(const l of labels){const c=board.cities.find(c=>c.id===l.id);s+=`<text id="label-${e(c.id)}" class="city-label" x="${l.x}" y="${l.y}" text-anchor="${l.anchor}" ${editable?`data-city="${e(c.id)}" data-city-label="${e(c.id)}"`:''}>${e(c.name)}</text>`;}s+='</g>';
+    for(const c of board.cities)s+=`<g ${editable?`data-city="${e(c.id)}" tabindex="0" role="button" aria-label="Select city: ${e(cityNameText(c.name))}"`:''}><title>${e(cityNameText(c.name))}</title>${editable?`<circle cx="${c.x}" cy="${c.y}" r="5" fill="transparent" stroke="none"/>`:''}<circle id="city-${e(c.id)}" cx="${c.x}" cy="${c.y}" r="${2.4*element}"/></g>`;
+    s+='</g><g id="city-labels">';
+    for(const l of labels){
+      const c=board.cities.find(c=>c.id===l.id),{lines,lineHeight}=cityLabelMetrics(c.name,element);
+      const multiline=lines.length>1;
+      const x=multiline?l.box.x:l.x,anchor=multiline?'start':l.anchor;
+      const label=multiline?lines.map((line,i)=>`<tspan x="${x}" dy="${i?lineHeight:0}">${e(line)}</tspan>`).join(''):e(lines[0]);
+      s+=`<text id="label-${e(c.id)}" class="city-label" x="${x}" y="${l.y}" text-anchor="${anchor}" ${editable?`data-city="${e(c.id)}" data-city-label="${e(c.id)}"`:''}>${label}</text>`;
+    }
+    s+='</g>';
     if(board.scoring){s+=`<g id="scoring-reference" class="map-reference" transform="translate(10 ${height-7})"><text font-size="2.8" font-weight="700">ROUTE SCORING</text>`;[1,2,3,4,5,6].forEach((v,i)=>{s+=`<text x="${37+i*21}" font-size="2.8">${v} = ${[1,2,4,7,10,15][i]} pt${v===1?'':'s'}</text>`;});s+='</g>';}
     return s;
   }
@@ -575,8 +589,15 @@ const BoardCore = (() => {
   const ticketSize={width:88.9,height:63.5,border:3,paperWidth:82.9,paperHeight:57.5};
   function ticketCard(board,t){
     const a=board.cities.find(c=>c.id===t.from),b=board.cities.find(c=>c.id===t.to),e=escape;
-    function name(city,y,tag,color){let lines=wrapName(city.name,18);if(lines.length>3)lines=wrapName(city.name,25);const font=lines.length>3?2.7:3.2,leading=lines.length>3?3.2:3.7;return `<circle cx="7" cy="${y-1.2}" r="1.5" fill="${color}"/><text x="7" y="${y-1.1}" text-anchor="middle" dominant-baseline="central" font-size="1.9" style="fill:white">${tag}</text><text x="11" y="${y}" font-size="${font}" font-weight="700">${lines.map((line,i)=>`<tspan x="11" dy="${i?leading:0}" textLength="${Math.min(25,line.length*font*.53)}" lengthAdjust="spacingAndGlyphs">${e(line)}</tspan>`).join('')}</text>`;}
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${ticketSize.paperWidth}mm" height="${ticketSize.paperHeight}mm" viewBox="0 0 88.9 63.5" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${e(a.name)} to ${e(b.name)}, ${t.points} points"><style>text{font-family:Arial,Helvetica,sans-serif;fill:#243647}</style><rect x=".2" y=".2" width="88.5" height="63.1" fill="white" stroke="#89949e" stroke-width=".25"/><text x="6" y="7" font-size="2.5" letter-spacing=".45">DESTINATION TICKET</text><path d="M6 10 H82.9" stroke="#bdc6cd" stroke-width=".25"/>${name(a,17,'A','#0068c9')}${name(b,30,'B','#e66b00')}${ticketMap(board,t).markup}<circle class="ticket-points-circle" cx="14" cy="49" r="8" fill="#edf0f3" stroke="#7b8791" stroke-width=".35"/><text x="14" y="48.5" text-anchor="middle" dominant-baseline="central" font-size="${String(t.points).length>4?3.7:6}" font-weight="700">${t.points}</text><text x="14" y="54" text-anchor="middle" font-size="2.1">POINTS</text><text x="6" y="60" font-size="1.8" textLength="${Math.min(58,board.title.length*1.05)}" lengthAdjust="spacingAndGlyphs">${e(board.title)}</text></svg>`;
+    function name(city,y,tag,color){
+      const parts=cityNameLines(city.name);
+      let lines=parts.flatMap(line=>wrapName(line,18));
+      if(lines.length>3)lines=parts.flatMap(line=>wrapName(line,25));
+      const leading=lines.length>3?Math.min(3.2,10/(lines.length-1)):3.7;
+      const font=lines.length>3?Math.min(2.7,leading*.85):3.2;
+      return `<circle cx="7" cy="${y-1.2}" r="1.5" fill="${color}"/><text x="7" y="${y-1.1}" text-anchor="middle" dominant-baseline="central" font-size="1.9" style="fill:white">${tag}</text><text x="11" y="${y}" font-size="${font}" font-weight="700">${lines.map((line,i)=>`<tspan x="11" dy="${i?leading:0}" textLength="${Math.min(25,line.length*font*.53)}" lengthAdjust="spacingAndGlyphs">${e(line)}</tspan>`).join('')}</text>`;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${ticketSize.paperWidth}mm" height="${ticketSize.paperHeight}mm" viewBox="0 0 88.9 63.5" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${e(cityNameText(a.name))} to ${e(cityNameText(b.name))}, ${t.points} points"><style>text{font-family:Arial,Helvetica,sans-serif;fill:#243647}</style><rect x=".2" y=".2" width="88.5" height="63.1" fill="white" stroke="#89949e" stroke-width=".25"/><text x="6" y="7" font-size="2.5" letter-spacing=".45">DESTINATION TICKET</text><path d="M6 10 H82.9" stroke="#bdc6cd" stroke-width=".25"/>${name(a,17,'A','#0068c9')}${name(b,30,'B','#e66b00')}${ticketMap(board,t).markup}<circle class="ticket-points-circle" cx="14" cy="49" r="8" fill="#edf0f3" stroke="#7b8791" stroke-width=".35"/><text x="14" y="48.5" text-anchor="middle" dominant-baseline="central" font-size="${String(t.points).length>4?3.7:6}" font-weight="700">${t.points}</text><text x="14" y="54" text-anchor="middle" font-size="2.1">POINTS</text><text x="6" y="60" font-size="1.8" textLength="${Math.min(58,board.title.length*1.05)}" lengthAdjust="spacingAndGlyphs">${e(board.title)}</text></svg>`;
   }
   function ticketSheets(board){
     const pages=[];
@@ -668,7 +689,7 @@ const BoardCore = (() => {
   }
   function trackingHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scoreboard</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#e6e2dc;font-family:Arial,sans-serif}.toolbar{text-align:center;padding:16px}button{font:inherit;padding:10px 16px}.page{width:215.9mm;height:279.4mm;margin:0 auto;background:white}.page>svg{display:block;width:100%;height:100%}@media print{.toolbar{display:none}body{background:white}.page{margin:0;break-inside:avoid}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · 100% / actual size · disable headers and footers · enable background graphics</p></div><main class="page">${trackingSheet(board)}</main></body></html>`;}
   function components(board){const unseen=new Set(board.cities.map(c=>c.id));let count=0;while(unseen.size){count++;const stack=[unseen.values().next().value];unseen.delete(stack[0]);while(stack.length){const id=stack.pop();for(const r of board.routes){const next=r.from===id?r.to:r.to===id?r.from:null;if(next&&unseen.delete(next))stack.push(next);}}}return count;}
-  return {paperSizes,size,details,mapArea,cityBounds,scaleFromSlider,sliderFromScale,emptyTerrain,terrainState,cleanSvgAsset,terrainPlacement,terrainZoomFromSlider,terrainSliderFromZoom,resizeBoard,scaleMap,mapPrintCSS,palette,trackFill,targets,empty,escape,copy,peers,setTrackCount,bendTracks,setLength,validate,geometry,nearestParameter,draggedBend,countBadge,badgeFrame,moveRouteBadge,routeBadges,layout,pinLabels,content,svg,shortestDistance,ticketSize,ticketMap,ticketCard,ticketSheets,ticketHTML,scoreSpiralPoint,scoreSpiral,trackingSheet,trackingHTML,components};
+  return {paperSizes,size,details,cityNameLines,cityNameText,cityLabelMetrics,mapArea,cityBounds,scaleFromSlider,sliderFromScale,emptyTerrain,terrainState,cleanSvgAsset,terrainPlacement,terrainZoomFromSlider,terrainSliderFromZoom,resizeBoard,scaleMap,mapPrintCSS,palette,trackFill,targets,empty,escape,copy,peers,setTrackCount,bendTracks,setLength,validate,geometry,nearestParameter,draggedBend,countBadge,badgeFrame,moveRouteBadge,routeBadges,layout,pinLabels,content,svg,shortestDistance,ticketSize,ticketMap,ticketCard,ticketSheets,ticketHTML,scoreSpiralPoint,scoreSpiral,trackingSheet,trackingHTML,components};
 })();
 </script>
 <script id="board-app">
@@ -733,7 +754,7 @@ const BoardCore = (() => {
     if(r)trackCount=C.peers(board,r).length;
     $('track-counts').querySelectorAll('button').forEach(b=>{const active=Number(b.dataset.count)===trackCount;b.classList.toggle('active',active);b.setAttribute('aria-pressed',active);});
     if(r){$('bend').value=r.bend;length=r.length;color=r.color;}
-    else if(selectedCities.length===1){const c=board.cities.find(c=>c.id===selectedCities[0]);if(document.activeElement!==$('rename'))$('rename').value=c.name;}
+    else if(selectedCities.length===1){const c=board.cities.find(c=>c.id===selectedCities[0]);if(document.activeElement!==$('rename'))$('rename').value=C.cityNameLines(c.name).join('\\n');}
     $('lengths').querySelectorAll('button').forEach(b=>{const active=Number(b.dataset.length)===length;b.classList.toggle('active',active);b.setAttribute('aria-pressed',active);});
     if(document.activeElement!==$('custom-length'))$('custom-length').value=length>6?length:'';
     $('palette').querySelectorAll('button').forEach(b=>{b.classList.toggle('active',b.dataset.color===color);b.setAttribute('aria-pressed',b.dataset.color===color);});
@@ -796,11 +817,12 @@ const BoardCore = (() => {
       C.moveRouteBadge(board,r,drag.special,position);clearSelection();selectedRoute=r.id;draw();
     }
     else if(drag.label){
-      const c=board.cities.find(c=>c.id===drag.label),w=Math.max(5,c.name.length*1.67)*C.details(board),anchor=c.labelAnchor||'middle';
+      const c=board.cities.find(c=>c.id===drag.label),s=C.details(board),anchor=c.labelAnchor||'middle';
+      const {width:w,height:h}=C.cityLabelMetrics(c.name,s);
       const left=anchor==='middle'?w/2:anchor==='end'?w:0,right=anchor==='middle'?w/2:anchor==='start'?w:0;
-      const area=C.mapArea(board),s=C.details(board),halo=.65*s;
+      const area=C.mapArea(board),halo=.65*s;
       const x=Math.max(area.left+halo+left,Math.min(area.right-halo-right,c.x+drag.positions.labelDX+p.x-drag.start.x));
-      const y=Math.max(area.top+3.85*s,Math.min(area.bottom-1.45*s,c.y+drag.positions.labelDY+p.y-drag.start.y));
+      const y=Math.max(area.top+3.85*s,Math.min(area.bottom+2.55*s-h,c.y+drag.positions.labelDY+p.y-drag.start.y));
       c.labelDX=x-c.x;c.labelDY=y-c.y;draw();
     }
     else if(drag.city){const c=board.cities.find(c=>c.id===drag.city),bounds=C.cityBounds(board);c.x=Math.max(bounds.left,Math.min(bounds.right,drag.positions.x+p.x-drag.start.x));c.y=Math.max(bounds.top,Math.min(bounds.bottom,drag.positions.y+p.y-drag.start.y));draw();}
@@ -856,8 +878,10 @@ const BoardCore = (() => {
     };$('palette').append(button);
   }
   $('add-city-form').addEventListener('submit',event=>{
-    event.preventDefault();const name=$('city-name').value.trim();if(!name)return;
-    if(board.cities.some(c=>c.name.toLowerCase()===name.toLowerCase())){message('A city with that name already exists.',true);return;}
+    event.preventDefault();
+    const name=$('city-name').value.trim(),key=C.cityNameText(name).toLowerCase();
+    if(!key){message('Enter a city name.',true);return;}
+    if(board.cities.some(c=>C.cityNameText(c.name).toLowerCase()===key)){message('A city with that name already exists.',true);return;}
     if(board.cities.length>=200){message('Maximum of 200 cities reached.',true);return;}
     // Deterministic open-position search avoids piling new cities on one point.
     const bounds=C.cityBounds(board),center={x:(bounds.left+bounds.right)/2,y:(bounds.top+bounds.bottom)/2};
@@ -871,7 +895,8 @@ const BoardCore = (() => {
   });
   $('rename').addEventListener('change',()=>{
     const c=board.cities.find(c=>c.id===selectedCities[0]),name=$('rename').value.trim();if(!c)return;
-    if(!name||board.cities.some(other=>other!==c&&other.name.toLowerCase()===name.toLowerCase())){message('Enter a unique, non-empty city name.',true);$('rename').value=c.name;return;}
+    const key=C.cityNameText(name).toLowerCase();
+    if(!key||board.cities.some(other=>other!==c&&C.cityNameText(other.name).toLowerCase()===key)){message('Enter a unique, non-empty city name.',true);$('rename').value=C.cityNameLines(c.name).join('\\n');return;}
     edit(()=>c.name=name);message('City renamed.');
   });
   $('auto-label').onclick=()=>{const c=board.cities.find(c=>c.id===selectedCities[0]);if(!c)return;edit(()=>{delete c.labelDX;delete c.labelDY;delete c.labelAnchor;C.pinLabels(board);});message('Label auto-placed. Its new offset will stay with the city.');};

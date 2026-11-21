@@ -4,7 +4,7 @@ Design printable train route boards with a self-contained browser editor. Open [
 
 ## Build a board
 
-1. Enter a name and click **Add City**. Drag the city dot to move it, or drag its label to reposition the text.
+1. Enter a name and click **Add City**. Type `\n` for a line break, as in `New\nTown`. Drag the city dot to move it, or drag its label to reposition the text.
 2. Select two cities, choose one to three tracks and a train length, then click a color. Select a track to edit it or add water and tunnel requirements. Drag a track to curve the connection.
 3. Select two cities and click **Create Ticket** to add a destination ticket. Edit its points or remove it in the list below the map.
 4. Use **Board setup** to choose Letter, 11 × 17, or A3 in portrait or landscape, adjust the map and element sizes, or upload an SVG background. **Use full map canvas** hides the heading, train counters, and route scoring reference.
