@@ -68,6 +68,7 @@ nav .title-field input{flex:none;width:100%;height:34px;padding:0 10px;border-ra
 .scoreboard-header h2{margin:0;font-size:17px}
 .scoreboard-actions{display:flex;gap:6px;flex-wrap:wrap}
 #scoreboard-preview{display:block;width:100%;margin:auto}
+.swatch:is([data-color="white"],[data-color="gray"]) span{background:var(--track-fill);box-shadow:inset 0 0 0 2px var(--color)}
 </style>
 </head>
 <body>
@@ -163,7 +164,8 @@ const BoardCore = (() => {
   // Background SVG geometry is supplied by the saved project.
   const paperSizes={letter:{label:'Letter',width:279.4,height:215.9},tabloid:{label:'11 × 17',width:431.8,height:279.4},a3:{label:'A3',width:420,height:297}};
   const size=board=>{const paper=paperSizes[board.paper||'a3'];return board.orientation==='portrait'?{...paper,width:paper.height,height:paper.width}:paper;};
-  const palette={red:'#d7262e',blue:'#0068c9',green:'#008548',yellow:'#b6a000',orange:'#e66b00',purple:'#8f2db8',black:'#15191e',gray:'#929ca6'};
+  const palette={red:'#d7262e',blue:'#0068c9',green:'#008548',yellow:'#b6a000',orange:'#e66b00',purple:'#8f2db8',black:'#15191e',gray:'#929ca6',white:'#cbd0d5'};
+  const trackFill=color=>color==='gray'?'#e5e7ea':'white';
   const targets={1:9,2:36,3:20,4:16,5:10,6:9};
   const emptyTerrain=()=>({type:'none',opacity:35,zoom:100,x:0,y:0});
   const terrainState=board=>({...emptyTerrain(),...board.terrain});
@@ -417,7 +419,8 @@ const BoardCore = (() => {
     // Only the number and an invisible hit target belong here. The counter's
     // outline is formed with the track in the same outer/inner paint layers.
     const s=`<g id="route-${e(r.id)}-badge" ${editable?`data-route="${e(n.trackId)}"`:''}>${editable?`<circle cx="${x}" cy="${y}" r="${n.radius+.3*details(board)}" fill="transparent"/>`:''}`;
-    return s+`<text id="route-${e(r.id)}-length" class="route-number" x="${x}" y="${y}" dominant-baseline="central" style="fill:${palette[n.color]};stroke:none;font-size:${size}px">${r.length}</text></g>`;
+    const ink=n.color==='white'?'#626c75':palette[n.color];
+    return s+`<text id="route-${e(r.id)}-length" class="route-number" x="${x}" y="${y}" dominant-baseline="central" style="fill:${ink};stroke:none;font-size:${size}px">${r.length}</text></g>`;
   }
   function scaledBadgeOffsets(offsets,factor){return Object.fromEntries(Object.entries(offsets).map(([kind,p])=>[kind,{along:p.along*factor,normal:p.normal*factor}]));}
   function badgeFrame(board,r){
@@ -536,8 +539,9 @@ const BoardCore = (() => {
       if(editable)s+=`<path d="${g.d}" stroke="transparent" stroke-width="9" pointer-events="stroke"/>`;
       s+=`<path id="route-${e(r.id)}-outline" d="${g.d}" stroke="${palette[r.color]}" stroke-width="${(3*element).toFixed(1)}"/>`;
       if(n)s+=countShape(n,n.radius+.3*element,palette[n.color],'count-outline');
-      s+=`<path id="route-${e(r.id)}-interior" d="${g.innerD}" stroke="white" stroke-width="${1.8*element}"/>`;
-      if(n)s+=countShape(n,n.radius-.3*element,'white','count-circle');
+      const fill=trackFill(r.color);
+      s+=`<path id="route-${e(r.id)}-interior" d="${g.innerD}" stroke="${fill}" stroke-width="${1.8*element}"/>`;
+      if(n)s+=countShape(n,n.radius-.3*element,fill,'count-circle');
       s+='</g>';
     }s+='</g><g id="route-length-labels">';
     for(const n of numbers)s+=badgeMarkup(board,n,editable);s+='</g>'+specialBadgesMarkup(board,editable)+`<g id="cities" fill="white" stroke="#20242a" stroke-width="${.65*element}">`;
@@ -589,7 +593,6 @@ const BoardCore = (() => {
     }return pages;
   }
   function ticketHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escape(board.title)} — Tickets</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#eaf0f4;font-family:Arial,sans-serif}.toolbar{padding:16px;text-align:center}.toolbar button{padding:10px;font-size:16px}.page{width:215.9mm;height:279.4mm;margin:12px auto;background:white;break-inside:avoid;break-after:page}.page:last-child{break-after:auto}.page>svg{display:block;width:215.9mm;height:279.4mm}@media print{body{background:white}.toolbar{display:none}.page{margin:0}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · actual size / 100% · disable headers and footers</p><p>Cut paper to 82.9 × 57.5 mm using the guides. Laminate with at least 6 mm between inserts, then trim the film to 88.9 × 63.5 mm (3.5 × 2.5 inches), leaving 3 mm of clear film on every side.</p></div>${ticketSheets(board).map(page=>`<section class="page">${page}</section>`).join('')}</body></html>`;}
-  const trackingPlayers=[{name:'Player 1',ink:'#9b6049',tint:'#ead6c6'},{name:'Player 2',ink:'#627b7a',tint:'#d4e0da'},{name:'Player 3',ink:'#727848',tint:'#dfe1c4'},{name:'Player 4',ink:'#a37c3e',tint:'#eee0bc'},{name:'Player 5',ink:'#817b70',tint:'#ddd8cd'}];
   const scoreSpiralPoint=(()=>{
     const rx=93,ry=84,radius=76,pitch=16.5,h=rx-radius,v=ry-radius;
     const line=(x,y,tx,ty,length)=>({length,at:d=>({x:x+tx*d,y:y+ty*d,tx,ty,nx:ty,ny:-tx,curvature:0})});
@@ -630,14 +633,14 @@ const BoardCore = (() => {
   }
   function trackingSheet(board){
     const e=escape,f=n=>Number(n.toFixed(3));
-    let out=`<svg xmlns="http://www.w3.org/2000/svg" width="215.9mm" height="279.4mm" viewBox="0 0 215.9 279.4" role="img" aria-label="Five-player train and score tracking sheet"><title>Scoreboard</title><desc>Letter portrait. Five 45-train counters and five parallel squircle spiral score lanes with a shared number row from 0 through 300. Follow your player colour from the outside towards the centre.</desc><defs><linearGradient id="tracking-paper" x2=".8" y2="1"><stop stop-color="#dce7cc"/><stop offset="1" stop-color="#b8cda9"/></linearGradient><pattern id="tracking-grain" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".16" fill="#7b8064" opacity=".21"/></pattern></defs><style>text{font-family:Arial,Helvetica,sans-serif;fill:#283f3b}.score-number{font-size:1.5px;text-anchor:middle;dominant-baseline:central}.score-number.major{font-size:1.6px;font-weight:700}</style><rect width="215.9" height="279.4" fill="url(#tracking-paper)"/><path d="M0 170C45 135 92 206 150 174S205 163 216 180V280H0Z" fill="#91ad83" opacity=".27"/><g fill="none" stroke="#8a9878" stroke-width=".35" opacity=".3"><path d="M-10 100C45 65 76 135 140 100S200 70 225 110M-10 104C45 69 76 139 140 104S200 74 225 114M-10 108C45 73 76 143 140 108S200 78 225 118M-10 218C45 180 76 256 140 218S200 185 225 228M-10 222C45 184 76 260 140 222S200 189 225 232M-10 226C45 188 76 264 140 226S200 193 225 236"/></g><rect width="215.9" height="279.4" fill="url(#tracking-grain)"/><path d="M0 30C50 0 110 45 216 12M0 34C55 4 110 49 216 16M0 38C50 8 110 53 216 20" fill="none" stroke="#8ca47e" stroke-width=".45" opacity=".65"/><text x="10" y="13" font-size="5.6" font-weight="700" letter-spacing=".35">Scoreboard</text><rect x="7" y="23" width="201.9" height="40" rx="3" fill="#fffdf7" fill-opacity=".82" stroke="#d0dbce" stroke-width=".25"/>`;
+    let out=`<svg xmlns="http://www.w3.org/2000/svg" width="215.9mm" height="279.4mm" viewBox="0 0 215.9 279.4" role="img" aria-label="Five-player train and score tracking sheet"><title>Scoreboard</title><desc>Letter portrait. Five 45-train counters and five parallel squircle spiral score lanes with a shared number row from 0 through 300.</desc><defs><linearGradient id="tracking-paper" x2=".8" y2="1"><stop stop-color="#f5f3ef"/><stop offset="1" stop-color="#e1ddd5"/></linearGradient><pattern id="tracking-grain" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".16" fill="#82796c" opacity=".21"/></pattern></defs><style>text{font-family:Arial,Helvetica,sans-serif;fill:#39352f}.score-number{font-size:1.5px;text-anchor:middle;dominant-baseline:central}.score-number.major{font-size:1.6px;font-weight:700}</style><rect width="215.9" height="279.4" fill="url(#tracking-paper)"/><path d="M0 170C45 135 92 206 150 174S205 163 216 180V280H0Z" fill="#c5beb2" opacity=".27"/><g fill="none" stroke="#a8a093" stroke-width=".35" opacity=".3"><path d="M-10 100C45 65 76 135 140 100S200 70 225 110M-10 104C45 69 76 139 140 104S200 74 225 114M-10 108C45 73 76 143 140 108S200 78 225 118M-10 218C45 180 76 256 140 218S200 185 225 228M-10 222C45 184 76 260 140 222S200 189 225 232M-10 226C45 188 76 264 140 226S200 193 225 236"/></g><rect width="215.9" height="279.4" fill="url(#tracking-grain)"/><path d="M0 30C50 0 110 45 216 12M0 34C55 4 110 49 216 16M0 38C50 8 110 53 216 20" fill="none" stroke="#aaa193" stroke-width=".45" opacity=".65"/><text x="10" y="13" font-size="5.6" font-weight="700" letter-spacing=".35">Scoreboard</text><rect x="7" y="23" width="201.9" height="40" rx="3" fill="#faf9f7" fill-opacity=".82" stroke="#d7d1c7" stroke-width=".25"/>`;
     const trainWidth=(173-44*.55-8*.9)/45;
     for(let player=0;player<5;player++){
-      const p=trackingPlayers[player],y=26+player*6.6;
-      out+=`<g id="tracking-player-${player+1}-trains"><circle cx="12" cy="${y+2.4}" r="1.3" fill="${p.ink}"/><text x="15" y="${y+3.2}" font-size="2.5" font-weight="700">${p.name}</text>`;
+      const y=26+player*6.6;
+      out+=`<g id="tracking-player-${player+1}-trains"><text x="10" y="${y+3.2}" font-size="2.5" font-weight="700">Player ${player+1}</text>`;
       for(let train=0;train<45;train++){
         const x=32+train*(trainWidth+.55)+Math.floor(train/5)*.9;
-        out+=`<rect id="tracking-player-${player+1}-train-${train+1}" x="${f(x)}" y="${f(y)}" width="${f(trainWidth)}" height="4.8" rx=".8" fill="${p.tint}" stroke="${p.ink}" stroke-width=".22"/>`;
+        out+=`<rect id="tracking-player-${player+1}-train-${train+1}" x="${f(x)}" y="${f(y)}" width="${f(trainWidth)}" height="4.8" rx=".8" fill="white" stroke="#817b70" stroke-width=".22"/>`;
       }out+='</g>';
     }
     out+='<text x="10" y="68" font-size="2.2">45 trains per player</text>';
@@ -647,24 +650,25 @@ const BoardCore = (() => {
     out+='<g id="shared-score-numbers" aria-label="Shared score row, 0 to 300">';
     for(const cell of cells){
       const center=point(cell.frame,-7.2);let angle=Math.atan2(cell.frame.ty,cell.frame.tx)*180/Math.PI;if(angle>90)angle-=180;if(angle< -90)angle+=180;
-      out+=`<g data-score-label="${cell.score}"><path d="${cellPath(cell,-7.2)}" fill="#e4e8d6" stroke="#909b7c" stroke-width=".12"/><text class="score-number${cell.score%5===0?' major':''}" transform="translate(${f(center.x)} ${f(center.y)}) rotate(${f(angle)})">${cell.score}</text></g>`;
+      out+=`<g data-score-label="${cell.score}"><path d="${cellPath(cell,-7.2)}" fill="#e8e4dc" stroke="#817b70" stroke-width=".12"/><text class="score-number${cell.score%5===0?' major':''}" transform="translate(${f(center.x)} ${f(center.y)}) rotate(${f(angle)})">${cell.score}</text></g>`;
     }out+='</g>';
     for(let player=0;player<5;player++){
-      const p=trackingPlayers[player];out+=`<g id="tracking-player-${player+1}-scores" aria-label="${p.name}, scores 0 to 300">`;
+      const fill=player%2===0?'white':'#e8e4dc';
+      out+=`<g id="tracking-player-${player+1}-scores" aria-label="Player ${player+1}, scores 0 to 300">`;
       for(const cell of cells){
         const offset=(player-2)*lane;
-        out+=`<g data-player="${player+1}" data-score="${cell.score}"><path d="${cellPath(cell,offset)}" fill="${p.tint}" stroke="${p.ink}" stroke-width="${cell.score%5===0?.22:.12}"/></g>`;
+        out+=`<g data-player="${player+1}" data-score="${cell.score}"><path d="${cellPath(cell,offset)}" fill="${fill}" stroke="#817b70" stroke-width="${cell.score%5===0?.22:.12}"/></g>`;
       }out+='</g>';
     }
     const start=cells[0].edge[0];
     out+='<text x="107.95" y="79" font-size="1.8" text-anchor="middle" font-weight="700">START →</text>';
-    for(let player=0;player<5;player++)out+=`<text x="${f(start.x-1.2)}" y="${f(start.y+start.ny*(player-2)*lane)}" text-anchor="end" dominant-baseline="central" font-size="1.5" style="fill:${trackingPlayers[player].ink};font-weight:700">P${player+1}</text>`;
+    for(let player=0;player<5;player++)out+=`<text x="${f(start.x-1.2)}" y="${f(start.y+start.ny*(player-2)*lane)}" text-anchor="end" dominant-baseline="central" font-size="1.5" font-weight="700">P${player+1}</text>`;
     out+='</svg>';
     return out;
   }
-  function trackingHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scoreboard</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#dce5df;font-family:Arial,sans-serif}.toolbar{text-align:center;padding:16px}button{font:inherit;padding:10px 16px}.page{width:215.9mm;height:279.4mm;margin:0 auto;background:white}.page>svg{display:block;width:100%;height:100%}@media print{.toolbar{display:none}body{background:white}.page{margin:0;break-inside:avoid}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · 100% / actual size · disable headers and footers · enable background graphics</p></div><main class="page">${trackingSheet(board)}</main></body></html>`;}
+  function trackingHTML(board){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Scoreboard</title><style>@page{size:letter portrait;margin:0}body{margin:0;background:#e6e2dc;font-family:Arial,sans-serif}.toolbar{text-align:center;padding:16px}button{font:inherit;padding:10px 16px}.page{width:215.9mm;height:279.4mm;margin:0 auto;background:white}.page>svg{display:block;width:100%;height:100%}@media print{.toolbar{display:none}body{background:white}.page{margin:0;break-inside:avoid}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button><p>US Letter portrait · 100% / actual size · disable headers and footers · enable background graphics</p></div><main class="page">${trackingSheet(board)}</main></body></html>`;}
   function components(board){const unseen=new Set(board.cities.map(c=>c.id));let count=0;while(unseen.size){count++;const stack=[unseen.values().next().value];unseen.delete(stack[0]);while(stack.length){const id=stack.pop();for(const r of board.routes){const next=r.from===id?r.to:r.to===id?r.from:null;if(next&&unseen.delete(next))stack.push(next);}}}return count;}
-  return {paperSizes,size,details,mapArea,cityBounds,scaleFromSlider,sliderFromScale,emptyTerrain,terrainState,cleanSvgAsset,terrainPlacement,terrainZoomFromSlider,terrainSliderFromZoom,resizeBoard,scaleMap,mapPrintCSS,palette,targets,empty,escape,copy,peers,setTrackCount,bendTracks,setLength,validate,geometry,nearestParameter,draggedBend,countBadge,badgeFrame,moveRouteBadge,routeBadges,layout,pinLabels,content,svg,shortestDistance,ticketSize,ticketMap,ticketCard,ticketSheets,ticketHTML,scoreSpiralPoint,scoreSpiral,trackingSheet,trackingHTML,components};
+  return {paperSizes,size,details,mapArea,cityBounds,scaleFromSlider,sliderFromScale,emptyTerrain,terrainState,cleanSvgAsset,terrainPlacement,terrainZoomFromSlider,terrainSliderFromZoom,resizeBoard,scaleMap,mapPrintCSS,palette,trackFill,targets,empty,escape,copy,peers,setTrackCount,bendTracks,setLength,validate,geometry,nearestParameter,draggedBend,countBadge,badgeFrame,moveRouteBadge,routeBadges,layout,pinLabels,content,svg,shortestDistance,ticketSize,ticketMap,ticketCard,ticketSheets,ticketHTML,scoreSpiralPoint,scoreSpiral,trackingSheet,trackingHTML,components};
 })();
 </script>
 <script id="board-app">
@@ -829,7 +833,10 @@ const BoardCore = (() => {
   $('custom-length').addEventListener('input',()=>{$('length-error').hidden=!$('custom-length').value||Number.isInteger(Number($('custom-length').value))&&Number($('custom-length').value)>=1&&Number($('custom-length').value)<=999;});
   $('custom-length').addEventListener('change',()=>{if($('custom-length').value)setLength(Number($('custom-length').value));});
   for(const [key,hex]of Object.entries(C.palette)){
-    const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=key;button.style.setProperty('--color',hex);button.setAttribute('aria-label',`${key} route`);button.innerHTML=`<span aria-hidden="true"></span>${key[0].toUpperCase()+key.slice(1)}`;
+    const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=key;
+    const label=key==='gray'?'Grey':key[0].toUpperCase()+key.slice(1);
+    button.style.setProperty('--color',hex);button.style.setProperty('--track-fill',C.trackFill(key));
+    button.setAttribute('aria-label',`${label} route`);button.innerHTML=`<span aria-hidden="true"></span>${label}`;
     button.onclick=()=>{
       const custom=$('custom-length').value;if(custom&&!setLength(Number(custom)))return;
       color=key;const r=currentRoute();
